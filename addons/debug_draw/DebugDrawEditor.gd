@@ -5,7 +5,7 @@ using System;
 [Tool]
 public class DebugDrawEditor : EditorPlugin
 {
-    public static string PluginDir = "res://addons/debug_draw_cs/";
+    public static string PluginDir = "res://addons/debug_draw/";
 
     ViewportContainer spatial_viewport = null;
 

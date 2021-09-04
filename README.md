@@ -35,9 +35,9 @@ No need to warry about removing or disabling functionality of this addon in expo
 
 ## Usage
 
-1. Copy `addons/debug_draw_cs` to your `addon` folder, create it if the folder doesn't exist.
+1. Copy `addons/debug_draw` to your `addon` folder, create it if the folder doesn't exist.
 1. Rebuild project.
-1. Add `addons/debug_draw_cs/DebugDraw.cs` to your project as autoload singleton.
+1. Add `addons/debug_draw/DebugDraw.gd` to your project as autoload singleton.
 1. (Optionally) Enable the `Debug Draw For Editor` plugin to enable debug drawing support inside the editor.
 
 Example (information about all public static functions and properties is present inside the script):
