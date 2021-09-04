@@ -40,7 +40,7 @@ func _find_spatial_editor_viewport(c, level) -> Control:
         for o in c.get_children():
             if o is Control:
                 var ch := (o as Control)
-                var res = get(ch, level + 1)
+                var res = _find_spatial_editor_viewport(ch, level + 1)
                 if res != null:
                     return res
 
