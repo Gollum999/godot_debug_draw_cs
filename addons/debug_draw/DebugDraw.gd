@@ -1,3 +1,4 @@
+# TODO need 'tool'?
 using GDArray = Godot.Collections.Array
 
 ### <summary>
@@ -263,7 +264,7 @@ extends Node
         internalInstance.Ready()
 
     func _process(delta: float) ->
-        internalInstance?.Update(delta)
+        internalInstance?.update(delta)
 
 #endif
 
@@ -620,13 +621,13 @@ extends Node
     ### <param name="groupTitle">Group title and ID</param>
     ### <param name="groupPriority">Group priority</param>
     ### <param name="showTitle">Whether to show the title</param>
-    static func begin_text_group(string groupTitle, int groupPriority = 0, Color? groupColor = null, bool showTitle = true) -> void:
+    static func begin_text_group(String groupTitle, int groupPriority = 0, Color? groupColor = null, bool showTitle = true) -> void:
         if OS.is_debug_build():
             internalInstance?.begin_text_group_internal(groupTitle, groupPriority, ref groupColor, showTitle)
 
     ### <summary>
-    ### End text group. Should be called after <see cref="begin_text_group(string, int, bool)"/> if you don't need more than one group.
-    ### If you need to create 2+ groups just call again <see cref="begin_text_group(string, int, bool)"/>
+    ### End text group. Should be called after <see cref="begin_text_group(String, int, bool)"/> if you don't need more than one group.
+    ### If you need to create 2+ groups just call again <see cref="begin_text_group(String, int, bool)"/>
     ### and this function in the end.
     ### </summary>
     ### <param name="groupTitle">Group title and ID</param>
@@ -643,7 +644,7 @@ extends Node
     ### <param name="value">Value of field</param>
     ### <param name="priority">Priority of this line. Lower value is higher position.</param>
     ### <param name="duration">Expiration time</param>
-    static func set_text(string key, object value = null, int priority = 0, Color? colorOfValue = null, float duration = -1f) -> void:
+    static func set_text(String key, object value = null, int priority = 0, Color? colorOfValue = null, float duration = -1f) -> void:
         if OS.is_debug_build():
             internalInstance?.set_text_internal(ref key, ref value, priority, ref colorOfValue, duration)
 
@@ -664,14 +665,14 @@ namespace DebugDrawInternalFunctionality
         radius: float
 
     class TextGroup:
-        title: string
+        title: String
         group_priority: int
         group_color: Color
         show_title: bool
         # TODO
-        texts := new Dictionary<string, DelayedText>()
+        texts := new Dictionary<String, DelayedText>()
 
-        func _init(title: string, priority: int, show_title: bool, group_color: Color):
+        func _init(title: String, priority: int, show_title: bool, group_color: Color):
             title = title
             group_priority = priority
             show_title = show_title
@@ -691,12 +692,12 @@ namespace DebugDrawInternalFunctionality
                 update?.Invoke()
 
     class DelayedText:
-        expiration_time: DateTime
-        text: string
-        priority: int
-        value_color: Color = null
+        var expiration_time: DateTime
+        var text: String
+        var priority: int
+        var value_color: Color = null
 
-        func _init(expiration_time: DateTime, text: string, priority: int, color: Color):
+        func _init(expiration_time: DateTime, text: String, priority: int, color: Color):
             expiration_time = expiration_time
             text = text
             priority = priority
@@ -706,100 +707,83 @@ namespace DebugDrawInternalFunctionality
             # TODO
             return not DebugDraw.DebugEnabled or (DateTime.Now - expiration_time).TotalMilliseconds > 0
 
-    class DelayedRenderer : IPoolable
-    {
-        public DateTime ExpirationTime
-        public bool IsUsedOneTime = false
-        public bool IsVisible = true
+    # NOTE: These were originally stored in an object pool in the C# version, but I decided to remove the pool for GDScript.
+    #       Due to the more limited toolset, implementing a pool in GDScript would probably look a lot different, and likely wouldn't be very efficient.
+    #       Revisit if performance becomes a problem.
+    class DelayedRenderer:
+        var expiration_time: DateTime
+        var is_used_one_time: bool = false  # TODO HasBeenDrawnOneTime?
+        var is_visible: bool = true
 
-        public bool IsExpired()
-        {
-            return !DebugDraw.DebugEnabled || ((DateTime.Now - ExpirationTime).TotalMilliseconds > 0 && IsUsedOneTime)
-        }
+        func is_expired() -> bool:
+            return not DebugDraw.DebugEnabled or ((DateTime.Now - expiration_time).TotalMilliseconds > 0 and is_used_one_time)
 
-        public void Returned()
-        {
-            IsUsedOneTime = false
-            IsVisible = true
-        }
-    }
+        # TODO just a reset, no point if I create a new one each time
+        # func Returned() -> void:
+        #     is_used_one_time = false
+        #     is_visible = true
 
-    class DelayedRendererInstance : DelayedRenderer
-    {
-        public Transform InstanceTransform
-        public Color InstanceColor
-        public SphereBounds Bounds = new SphereBounds()
-    }
+    class DelayedRendererInstance extends DelayedRenderer:
+        var InstanceTransform: Transform
+        var InstanceColor: Color
+        var Bounds: SphereBounds = new SphereBounds()
 
-    class DelayedRendererLine : DelayedRenderer
-    {
-        public AABB Bounds { get set }
-        public Color LinesColor
-        protected Vector3[] _lines = Array.Empty<Vector3>()
-        public virtual Vector3[] Lines
+    class DelayedRendererLine extends DelayedRenderer:
+        var Bounds: AABB { get set }
+        var LinesColor: Color
+        var Vector3[] _lines = Array.Empty<Vector3>()
+
+        func virtual Vector3[] Lines
         {
             get => _lines
             set
             {
                 _lines = value
-                Bounds = CalculateBoundsBasedOnLines(ref _lines)
+                Bounds = _calculate_bounds_based_on_lines(ref _lines)
             }
         }
 
-        protected AABB CalculateBoundsBasedOnLines(ref Vector3[] lines)
+        func _calculate_bounds_based_on_lines(ref Vector3[] lines) -> AABB:
         {
-            if (lines.Length > 0)
-            {
+            if lines.Length > 0:
                 var b = new AABB(lines[0], Vector3.Zero)
-                foreach (var v in lines)
+                for v in lines:
                     b = b.Expand(v)
 
                 return b
-            }
-            else
-            {
+            else:
                 return new AABB()
-            }
         }
-    }
 
     #endregion # Renderable Primitives
 
-    class FPSGraph
-    {
-        float[] frameTimes = new float[1]
-        int position = 0
-        int filled = 0
+    class FPSGraph:
+        var float[] frameTimes = new float[1]
+        var position: int = 0
+        var filled: int = 0
 
-        public void Update(float delta)
-        {
-            if (delta == 0)
+        func update(delta: float) -> void:
+            if delta == 0:
                 return
 
             var length = Mathf.Clamp((int)DebugDraw.FPSGraphSize.x, 150, int.MaxValue)
-            if (frameTimes.Length != length)
-            {
+            if (frameTimes.length != length):
                 frameTimes = new float[length]
                 frameTimes[0] = delta
                 # loop array
                 frameTimes[length - 1] = delta
                 position = 1
                 filled = 1
-            }
-            else
-            {
+            else:
                 frameTimes[position] = delta
                 position = Mathf.PosMod(position + 1, frameTimes.Length)
                 filled = Mathf.Clamp(filled + 1, 0, frameTimes.Length)
-            }
-        }
 
-        public void Draw(CanvasItem ci, Font font, Vector2 viewportSize)
-        {
+        func draw(CanvasItem ci, Font font, Vector2 viewportSize) -> void:
             var notZero = frameTimes.Where((f) => f > 0f).Select((f) => DebugDraw.FPSGraphFrameTimeMode ? f * 1000 : 1f / f).ToArray()
 
             # No elements. Leave
-            if (notZero.Length == 0)
+            if notZero.length() == 0:
                 return
 
             var max = notZero.Max()
@@ -880,7 +864,6 @@ namespace DebugDrawInternalFunctionality
             if ((DebugDraw.FPSGraphShowTextFlags & DebugDraw.FPSGraphTextFlags.Current) == DebugDraw.FPSGraphTextFlags.Current)
                 ci.DrawString(font, pos + new Vector2(graphSize.x - cur_size.x, graphSize.y * 0.5f + cur_size.y * 0.5f - 2),
                     cur_text, DebugDraw.FPSGraphTextColor)
-        }
     }
 
     class MultiMeshContainer
@@ -895,6 +878,7 @@ namespace DebugDrawInternalFunctionality
         readonly MultiMeshInstance _mmi_spheres = null
         readonly MultiMeshInstance _mmi_cylinders = null
 
+        # TODO could do properties, but I would have to write getter fns either way
         public HashSet<DelayedRendererInstance> Cubes { get => all_mmi_with_values[_mmi_cubes] }
         public HashSet<DelayedRendererInstance> CubesCentered { get => all_mmi_with_values[_mmi_cubes_centered] }
         public HashSet<DelayedRendererInstance> Arrowheads { get => all_mmi_with_values[_mmi_arrowheads] }
@@ -904,7 +888,7 @@ namespace DebugDrawInternalFunctionality
         public HashSet<DelayedRendererInstance> Cylinders { get => all_mmi_with_values[_mmi_cylinders] }
 
         readonly Dictionary<MultiMeshInstance, HashSet<DelayedRendererInstance>> all_mmi_with_values =
-            new Dictionary<MultiMeshInstance, HashSet<DelayedRendererInstance>>()
+            new Dictionary<MultiMeshInstance, HashSet<DelayedRendererInstance>>()  # TODO this is crucial
 
         public MultiMeshContainer(Node root, Action<int> onObjectRendered)
         {
@@ -924,29 +908,29 @@ namespace DebugDrawInternalFunctionality
             (_mmi_billboard_squares.MaterialOverride as SpatialMaterial).ParamsBillboardKeepScale = true
 
             # Create Meshes
-            _mmi_cubes.Multimesh.Mesh = CreateMesh(
+            _mmi_cubes.multimesh.mesh = CreateMesh(
                 Mesh.PrimitiveType.Lines, DebugDrawImplementation.CubeVertices, DebugDrawImplementation.CubeIndices)
 
-            _mmi_cubes_centered.Multimesh.Mesh = CreateMesh(Mesh.PrimitiveType.Lines,
+            _mmi_cubes_centered.multimesh.mesh = CreateMesh(Mesh.PrimitiveType.Lines,
                 DebugDrawImplementation.CenteredCubeVertices, DebugDrawImplementation.CubeIndices)
 
-            _mmi_arrowheads.Multimesh.Mesh = CreateMesh(Mesh.PrimitiveType.Lines,
+            _mmi_arrowheads.multimesh.mesh = CreateMesh(Mesh.PrimitiveType.Lines,
                 DebugDrawImplementation.ArrowheadVertices, DebugDrawImplementation.ArrowheadIndices)
 
-            _mmi_billboard_squares.Multimesh.Mesh = CreateMesh(Mesh.PrimitiveType.Triangles,
+            _mmi_billboard_squares.multimesh.mesh = CreateMesh(Mesh.PrimitiveType.Triangles,
                 DebugDrawImplementation.CenteredSquareVertices, DebugDrawImplementation.SquareIndices)
 
-            _mmi_positions.Multimesh.Mesh = CreateMesh(Mesh.PrimitiveType.Lines,
+            _mmi_positions.multimesh.mesh = CreateMesh(Mesh.PrimitiveType.Lines,
                 DebugDrawImplementation.PositionVertices, DebugDrawImplementation.PositionIndices)
 
-            _mmi_spheres.Multimesh.Mesh = CreateMesh(Mesh.PrimitiveType.Lines,
+            _mmi_spheres.multimesh.mesh = CreateMesh(Mesh.PrimitiveType.Lines,
                 DebugDrawImplementation.CreateSphereLines(6, 6, 0.5f, Vector3.Zero))
 
-            _mmi_cylinders.Multimesh.Mesh = CreateMesh(Mesh.PrimitiveType.Lines,
+            _mmi_cylinders.multimesh.mesh = CreateMesh(Mesh.PrimitiveType.Lines,
                 DebugDrawImplementation.CreateCylinderLines(52, 0.5f, 1, Vector3.Zero, 4))
         }
 
-        MultiMeshInstance CreateMMI(Node root, string name)
+        MultiMeshInstance CreateMMI(Node root, String name)
         {
             var mmi = new MultiMeshInstance()
             {
@@ -1042,14 +1026,14 @@ namespace DebugDrawInternalFunctionality
             {
                 if (mmi.Multimesh.InstanceCount < instances.Count)
                     mmi.Multimesh.InstanceCount = instances.Count
-                mmi.Multimesh.VisibleInstanceCount = instances.Sum((inst) => inst.IsVisible ? 1 : 0)
+                mmi.Multimesh.VisibleInstanceCount = instances.Sum((inst) => inst.is_visible ? 1 : 0)
                 addRenderedObjects?.Invoke(mmi.Multimesh.VisibleInstanceCount)
 
                 int i = 0
                 foreach (var d in instances)
                 {
-                    d.IsUsedOneTime = true
-                    if (d.IsVisible)
+                    d.is_used_one_time = true
+                    if (d.is_visible)
                     {
                         mmi.Multimesh.SetInstanceTransform(i, d.InstanceTransform)
                         mmi.Multimesh.SetInstanceColor(i, d.InstanceColor)
@@ -1064,35 +1048,32 @@ namespace DebugDrawInternalFunctionality
         void UpdateVisibilityInternal(HashSet<DelayedRendererInstance> instances, Plane[] frustum)
         {
             foreach (var _mesh in instances)
-                _mesh.IsVisible = DebugDrawImplementation.BoundsPartiallyInsideConvexShape(_mesh.Bounds, frustum)
+                _mesh.is_visible = DebugDrawImplementation.BoundsPartiallyInsideConvexShape(_mesh.Bounds, frustum)
         }
     }
 
-    # https:#docs.microsoft.com/en-gb/dotnet/standard/collections/thread-safe/how-to-create-an-object-pool
-    class ObjectPool<T> where T : class, IPoolable, new()
-    {
-        private readonly ConcurrentBag<T> _objects
-        private readonly Func<T> _objectGenerator
+    # https://docs.microsoft.com/en-gb/dotnet/standard/collections/thread-safe/how-to-create-an-object-pool
+    # class ObjectPool<T> where T : class, IPoolable, new()
+    # {
+    #     private readonly ConcurrentBag<T> _objects
+    #     private readonly Func<T> _objectGenerator
 
-        public ObjectPool(Func<T> objectGenerator)
-        {
-            _objectGenerator = objectGenerator ?? throw new ArgumentNullException(nameof(objectGenerator))
-            _objects = new ConcurrentBag<T>()
-        }
+    #     public ObjectPool(Func<T> objectGenerator)
+    #     {
+    #         _objectGenerator = objectGenerator ?? throw new ArgumentNullException(nameof(objectGenerator))
+    #         _objects = new ConcurrentBag<T>()
+    #     }
 
-        public T Get() => _objects.TryTake(out T item) ? item : _objectGenerator()
+    #     # TODO: pulls an object out of the pool (or creates a new one)
+    #     public T Get() => _objects.TryTake(out T item) ? item : _objectGenerator()
 
-        public void Return(T item)
-        {
-            _objects.Add(item)
-            item.Returned()
-        }
-    }
-
-    interface IPoolable
-    {
-        void Returned()
-    }
+    #     # TODO: puts an object back in that was pulled via Get()
+    #     public void Return(T item)
+    #     {
+    #         _objects.Add(item)
+    #         item.Returned()
+    #     }
+    # }
 
     class DebugDrawImplementation : IDisposable
     {
@@ -1371,7 +1352,7 @@ namespace DebugDrawInternalFunctionality
             _immediateGeometry = null
 
             # Clear editor canvas
-            CustomCanvas?.Update()
+            CustomCanvas?.update()
 
         func update(delta: float) -> void:
             lock (dataLock)
@@ -1396,15 +1377,15 @@ namespace DebugDrawInternalFunctionality
             }
 
             # FPS Graph
-            fpsGraph.Update(delta)
+            fpsGraph.update(delta)
 
             # Update overlay
             if (_canvasNeedUpdate || DebugDraw.FPSGraphEnabled)
             {
                 if (CustomCanvas == null)
-                    CanvasItemInternal.Update()
+                    CanvasItemInternal.update()
                 else
-                    CustomCanvas.Update()
+                    CustomCanvas.update()
 
                 # reset some values
                 _canvasNeedUpdate = false
@@ -1451,7 +1432,7 @@ namespace DebugDrawInternalFunctionality
                 if DebugDraw.UseFrustumCulling and f != null:
                     # Update immediate geometry
                     foreach (var _lines in _wireMeshes)
-                        _lines.IsVisible = BoundsPartiallyInsideConvexShape(_lines.Bounds, f)
+                        _lines.is_visible = BoundsPartiallyInsideConvexShape(_lines.Bounds, f)
                     # Update meshes
                     _mmc.UpdateVisibility(f)
 
@@ -1459,9 +1440,9 @@ namespace DebugDrawInternalFunctionality
                 # Line drawing much faster with only one Begin/End call
                 foreach (var m in _wireMeshes)
                 {
-                    m.IsUsedOneTime = true
+                    m.is_used_one_time = true
 
-                    if (m.IsVisible)
+                    if (m.is_visible)
                     {
                         renderWireframes++
                         _immediateGeometry.SetColor(m.LinesColor)
@@ -1501,7 +1482,7 @@ namespace DebugDrawInternalFunctionality
             { # Text drawing
                 var count = _textGroups.Sum((g) => g.Texts.Count + (g.ShowTitle ? 1 : 0))
 
-                const string separator = " : "
+                const String separator = " : "
 
                 Vector2 ascent = new Vector2(0, _font.GetAscent())
                 Vector2 font_offset = ascent + DebugDraw.TextPadding
@@ -1539,7 +1520,7 @@ namespace DebugDrawInternalFunctionality
                 {
                     var a = g.Texts.OrderBy(t => t.Value.Priority).ThenBy(t => t.Key)
 
-                    foreach (var t in g.ShowTitle ? a.Prepend(new KeyValuePair<string, DelayedText>(g.Title ?? "", null)) : a)
+                    foreach (var t in g.ShowTitle ? a.Prepend(new KeyValuePair<String, DelayedText>(g.Title ?? "", null)) : a)
                     {
                         var keyText = t.Key ?? ""
                         var text = t.Value?.Text == null ? keyText : $"{keyText}{separator}{t.Value.Text}"
@@ -1621,8 +1602,9 @@ namespace DebugDrawInternalFunctionality
                 var inst = _poolInstanceRenderers.Get()
                 inst.InstanceTransform = transform
                 inst.InstanceColor = color ?? Colors.Chartreuse
-                inst.Bounds.Position = transform.origin inst.Bounds.Radius = transform.basis.Scale.Length() * 0.5f
-                inst.ExpirationTime = DateTime.Now + TimeSpan.FromSeconds(duration)
+                inst.Bounds.Position = transform.origin
+                inst.Bounds.Radius = transform.basis.Scale.Length() * 0.5f
+                inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
                 _mmc?.Spheres.Add(inst)
             }
@@ -1650,8 +1632,9 @@ namespace DebugDrawInternalFunctionality
                 var inst = _poolInstanceRenderers.Get()
                 inst.InstanceTransform = transform
                 inst.InstanceColor = color ?? Colors.Yellow
-                inst.Bounds.Position = transform.origin inst.Bounds.Radius = transform.basis.Scale.Length() * 0.5f
-                inst.ExpirationTime = DateTime.Now + TimeSpan.FromSeconds(duration)
+                inst.Bounds.Position = transform.origin
+                inst.Bounds.Radius = transform.basis.Scale.Length() * 0.5f
+                inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
                 _mmc?.Cylinders.Add(inst)
             }
@@ -1680,17 +1663,17 @@ namespace DebugDrawInternalFunctionality
                 var inst = _poolInstanceRenderers.Get()
                 inst.InstanceTransform = t
                 inst.InstanceColor = color ?? Colors.ForestGreen
-                inst.ExpirationTime = DateTime.Now + TimeSpan.FromSeconds(duration)
+                inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
                 inst.Bounds.Radius = radius
 
-                if (isBoxCentered)
+                if isBoxCentered:
                     inst.Bounds.Position = t.origin
-                else
+                else:
                     inst.Bounds.Position = t.origin + size * 0.5f
 
-                if (isBoxCentered)
+                if isBoxCentered:
                     _mmc?.CubesCentered.Add(inst)
-                else
+                else:
                     _mmc?.Cubes.Add(inst)
             }
 
@@ -1704,18 +1687,18 @@ namespace DebugDrawInternalFunctionality
 
                 var inst = _poolInstanceRenderers.Get()
                 inst.InstanceTransform = transform
-                inst.InstanceColor = color ?? Colors.ForestGreen
-                inst.ExpirationTime = DateTime.Now + TimeSpan.FromSeconds(duration)
+                inst.InstanceColor = color if color else Colors.ForestGreen
+                inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
                 inst.Bounds.Radius = radius
 
-                if (isBoxCentered)
+                if isBoxCentered:
                     inst.Bounds.Position = transform.origin
-                else
+                else:
                     inst.Bounds.Position = transform.origin + transform.basis.Scale * 0.5f
 
-                if (isBoxCentered)
+                if isBoxCentered:
                     _mmc?.CubesCentered.Add(inst)
-                else
+                else:
                     _mmc?.Cubes.Add(inst)
             }
 
@@ -1752,11 +1735,11 @@ namespace DebugDrawInternalFunctionality
 
                     line_a.Lines = new Vector3[] { a, hit_pos }
                     line_a.LinesColor = hitColor ?? DebugDraw.LineHitColor
-                    line_a.ExpirationTime = time
+                    line_a.expiration_time = time
 
                     line_b.Lines = new Vector3[] { hit_pos, b }
                     line_b.LinesColor = afterHitColor ?? DebugDraw.LineAfterHitColor
-                    line_b.ExpirationTime = time
+                    line_b.expiration_time = time
 
                     _wireMeshes.Add(line_a)
                     _wireMeshes.Add(line_b)
@@ -1768,8 +1751,9 @@ namespace DebugDrawInternalFunctionality
                     var inst = _poolInstanceRenderers.Get()
                     inst.InstanceTransform = t
                     inst.InstanceColor = hitColor ?? DebugDraw.LineHitColor
-                    inst.Bounds.Position = t.origin inst.Bounds.Radius = CubeDiaganolLengthForSphere * hitSize
-                    inst.ExpirationTime = time
+                    inst.Bounds.Position = t.origin
+                    inst.Bounds.Radius = CubeDiaganolLengthForSphere * hitSize
+                    inst.expiration_time = time
 
                     _mmc?.BillboardSquares.Add(inst)
                 }
@@ -1779,7 +1763,7 @@ namespace DebugDrawInternalFunctionality
 
                     line.Lines = new Vector3[] { a, b }
                     line.LinesColor = hitColor ?? DebugDraw.LineHitColor
-                    line.ExpirationTime = DateTime.Now + TimeSpan.FromSeconds(duration)
+                    line.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
                     _wireMeshes.Add(line)
                 }
@@ -1797,7 +1781,7 @@ namespace DebugDrawInternalFunctionality
 
                 line.Lines = new Vector3[] { a, b }
                 line.LinesColor = color ?? Colors.LightGreen
-                line.ExpirationTime = DateTime.Now + TimeSpan.FromSeconds(duration)
+                line.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
                 _wireMeshes.Add(line)
             }
@@ -1821,7 +1805,7 @@ namespace DebugDrawInternalFunctionality
 
                 line.Lines = CreateLinesFromPath(path)
                 line.LinesColor = color ?? Colors.LightGreen
-                line.ExpirationTime = DateTime.Now + TimeSpan.FromSeconds(duration)
+                line.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
                 _wireMeshes.Add(line)
             }
@@ -1844,7 +1828,7 @@ namespace DebugDrawInternalFunctionality
 
             line.Lines = new Vector3[] { a, b }
             line.LinesColor = color ?? Colors.LightGreen
-            line.ExpirationTime = DateTime.Now + TimeSpan.FromSeconds(duration)
+            line.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
             _wireMeshes.Add(line)
 
@@ -1865,7 +1849,7 @@ namespace DebugDrawInternalFunctionality
             var line = _poolWiredRenderers.Get()
             line.Lines = CreateLinesFromPath(path)
             line.LinesColor = color ?? Colors.LightGreen
-            line.ExpirationTime = DateTime.Now + TimeSpan.FromSeconds(duration)
+            line.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
             _wireMeshes.Add(line)
 
             for (int i = 0 i < path.Count - 1 i++)
@@ -1898,8 +1882,9 @@ namespace DebugDrawInternalFunctionality
                 var inst = _poolInstanceRenderers.Get()
                 inst.InstanceTransform = t
                 inst.InstanceColor = color ?? Colors.Red
-                inst.Bounds.Position = t.origin inst.Bounds.Radius = CubeDiaganolLengthForSphere * size
-                inst.ExpirationTime = DateTime.Now + TimeSpan.FromSeconds(duration)
+                inst.Bounds.Position = t.origin
+                inst.Bounds.Radius = CubeDiaganolLengthForSphere * size
+                inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
                 _mmc?.BillboardSquares.Add(inst)
             }
@@ -1939,7 +1924,7 @@ namespace DebugDrawInternalFunctionality
 
                 line.Lines = CreateCameraFrustumLines(planes)
                 line.LinesColor = color ?? Colors.DarkSalmon
-                line.ExpirationTime = DateTime.Now + TimeSpan.FromSeconds(duration)
+                line.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
                 _wireMeshes.Add(line)
             }
@@ -1957,8 +1942,9 @@ namespace DebugDrawInternalFunctionality
                 var inst = _poolInstanceRenderers.Get()
                 inst.InstanceTransform = transform
                 inst.InstanceColor = color ?? Colors.Crimson
-                inst.Bounds.Position = transform.origin inst.Bounds.Radius = GetMaxValue(ref s) * 0.5f
-                inst.ExpirationTime = DateTime.Now + TimeSpan.FromSeconds(duration)
+                inst.Bounds.Position = transform.origin
+                inst.Bounds.Radius = GetMaxValue(ref s) * 0.5f
+                inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
                 _mmc?.Positions.Add(inst)
             }
@@ -1986,7 +1972,7 @@ namespace DebugDrawInternalFunctionality
 
         #region 2D
 
-        func begin_text_group_internal(string groupTitle, int groupPriority, ref Color? groupColor, bool showTitle) -> void:
+        func begin_text_group_internal(String groupTitle, int groupPriority, ref Color? groupColor, bool showTitle) -> void:
             lock (dataLock)
             {
                 var newGroup = _textGroups.FirstOrDefault(g => g.Title == groupTitle)
@@ -2015,7 +2001,7 @@ namespace DebugDrawInternalFunctionality
                 _defaultTextGroup.GroupColor = DebugDraw.TextForegroundColor
             }
 
-        func set_text_internal(ref string key, ref object value, int priority, ref Color? colorOfValue, float duration) -> void:
+        func set_text_internal(ref String key, ref object value, int priority, ref Color? colorOfValue, float duration) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -2031,7 +2017,7 @@ namespace DebugDrawInternalFunctionality
                         _update_canvas()
                     t.Text = _strVal
                     t.Priority = priority
-                    t.ExpirationTime = _newTime
+                    t.expiration_time = _newTime
                     t.ValueColor = colorOfValue
                 }
                 else
@@ -2048,7 +2034,7 @@ namespace DebugDrawInternalFunctionality
 
         void DrawDebugBoundsForDebugLinePrimitives(DelayedRendererLine dr)
         {
-            if (!dr.IsVisible)
+            if (!dr.is_visible)
                 return
 
             var _lines = CreateCubeLines(dr.Bounds.Position, Quat.Identity, dr.Bounds.Size, false, true)
@@ -2063,7 +2049,7 @@ namespace DebugDrawInternalFunctionality
 
         void DrawDebugBoundsForDebugInstancePrimitives(DelayedRendererInstance dr)
         {
-            if (!dr.IsVisible)
+            if (!dr.is_visible)
                 return
 
             renderInstances++
@@ -2087,8 +2073,9 @@ namespace DebugDrawInternalFunctionality
                 var inst = _poolInstanceRenderers.Get()
                 inst.InstanceTransform = t
                 inst.InstanceColor = color ?? Colors.LightGreen
-                inst.Bounds.Position = t.origin - t.basis.z * 0.5f inst.Bounds.Radius = CubeDiaganolLengthForSphere * length
-                inst.ExpirationTime = time
+                inst.Bounds.Position = t.origin - t.basis.z * 0.5f
+                inst.Bounds.Radius = CubeDiaganolLengthForSphere * length
+                inst.expiration_time = time
 
                 _mmc?.Arrowheads.Add(inst)
             }
@@ -2102,7 +2089,7 @@ namespace DebugDrawInternalFunctionality
 
             foreach (var i in instances)
             {
-                i.IsUsedOneTime = true # needed for proper clear
+                i.is_used_one_time = true # needed for proper clear
                 int idx = index
                 index += 16
 
