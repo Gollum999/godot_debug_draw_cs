@@ -74,13 +74,13 @@ func _process(delta: float) -> void:
         # Normal
         {
             DebugDraw.draw_line_3d(GetNode<Spatial>("Lines/1").GlobalTransform.origin, target.GlobalTransform.origin, Colors.Fuchsia)
-            DebugDraw.draw_ray_3d(GetNode<Spatial>("Lines/3").GlobalTransform.origin, (target.GlobalTransform.origin - GetNode<Spatial>("Lines/3").GlobalTransform.origin).Normalized(), 3f, Colors.Crimson)
+            DebugDraw.draw_ray_3d(GetNode<Spatial>("Lines/3").GlobalTransform.origin, (target.GlobalTransform.origin - GetNode<Spatial>("Lines/3").GlobalTransform.origin).normalized(), 3f, Colors.Crimson)
         }
 
         # Arrow
         {
             DebugDraw.draw_arrow_line_3d(GetNode<Spatial>("Lines/2").GlobalTransform.origin, target.GlobalTransform.origin, Colors.Blue)
-            DebugDraw.draw_arrow_ray_3d(GetNode<Spatial>("Lines/4").GlobalTransform.origin, (target.GlobalTransform.origin - GetNode<Spatial>("Lines/4").GlobalTransform.origin).Normalized(), 8f, Colors.Lavender)
+            DebugDraw.draw_arrow_ray_3d(GetNode<Spatial>("Lines/4").GlobalTransform.origin, (target.GlobalTransform.origin - GetNode<Spatial>("Lines/4").GlobalTransform.origin).normalized(), 8f, Colors.Lavender)
         }
 
         # Path
