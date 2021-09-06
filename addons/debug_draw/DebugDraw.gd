@@ -890,48 +890,45 @@ namespace DebugDrawInternalFunctionality
         readonly Dictionary<MultiMeshInstance, HashSet<DelayedRendererInstance>> all_mmi_with_values =
             new Dictionary<MultiMeshInstance, HashSet<DelayedRendererInstance>>()  # TODO this is crucial
 
-        public MultiMeshContainer(Node root, Action<int> onObjectRendered)
-        {
+        func _init(Node root, Action<int> onObjectRendered):
             addRenderedObjects = onObjectRendered
 
             # Create node with material and MultiMesh. Add to tree. Create array of instances
-            _mmi_cubes = CreateMMI(root, nameof(_mmi_cubes))
-            _mmi_cubes_centered = CreateMMI(root, nameof(_mmi_cubes_centered))
-            _mmi_arrowheads = CreateMMI(root, nameof(_mmi_arrowheads))
-            _mmi_billboard_squares = CreateMMI(root, nameof(_mmi_billboard_squares))
-            _mmi_positions = CreateMMI(root, nameof(_mmi_positions))
-            _mmi_spheres = CreateMMI(root, nameof(_mmi_spheres))
-            _mmi_cylinders = CreateMMI(root, nameof(_mmi_cylinders))
+            _mmi_cubes = _create_mmi(root, nameof(_mmi_cubes))
+            _mmi_cubes_centered = _create_mmi(root, nameof(_mmi_cubes_centered))
+            _mmi_arrowheads = _create_mmi(root, nameof(_mmi_arrowheads))
+            _mmi_billboard_squares = _create_mmi(root, nameof(_mmi_billboard_squares))
+            _mmi_positions = _create_mmi(root, nameof(_mmi_positions))
+            _mmi_spheres = _create_mmi(root, nameof(_mmi_spheres))
+            _mmi_cylinders = _create_mmi(root, nameof(_mmi_cylinders))
 
             # Customize parameters
             (_mmi_billboard_squares.MaterialOverride as SpatialMaterial).ParamsBillboardMode = SpatialMaterial.BillboardMode.Enabled
             (_mmi_billboard_squares.MaterialOverride as SpatialMaterial).ParamsBillboardKeepScale = true
 
             # Create Meshes
-            _mmi_cubes.multimesh.mesh = CreateMesh(
+            _mmi_cubes.multimesh.mesh = _create_mesh(
                 Mesh.PrimitiveType.Lines, DebugDrawImplementation.CubeVertices, DebugDrawImplementation.CubeIndices)
 
-            _mmi_cubes_centered.multimesh.mesh = CreateMesh(Mesh.PrimitiveType.Lines,
+            _mmi_cubes_centered.multimesh.mesh = _create_mesh(Mesh.PrimitiveType.Lines,
                 DebugDrawImplementation.CenteredCubeVertices, DebugDrawImplementation.CubeIndices)
 
-            _mmi_arrowheads.multimesh.mesh = CreateMesh(Mesh.PrimitiveType.Lines,
+            _mmi_arrowheads.multimesh.mesh = _create_mesh(Mesh.PrimitiveType.Lines,
                 DebugDrawImplementation.ArrowheadVertices, DebugDrawImplementation.ArrowheadIndices)
 
-            _mmi_billboard_squares.multimesh.mesh = CreateMesh(Mesh.PrimitiveType.Triangles,
+            _mmi_billboard_squares.multimesh.mesh = _create_mesh(Mesh.PrimitiveType.Triangles,
                 DebugDrawImplementation.CenteredSquareVertices, DebugDrawImplementation.SquareIndices)
 
-            _mmi_positions.multimesh.mesh = CreateMesh(Mesh.PrimitiveType.Lines,
+            _mmi_positions.multimesh.mesh = _create_mesh(Mesh.PrimitiveType.Lines,
                 DebugDrawImplementation.PositionVertices, DebugDrawImplementation.PositionIndices)
 
-            _mmi_spheres.multimesh.mesh = CreateMesh(Mesh.PrimitiveType.Lines,
-                DebugDrawImplementation.CreateSphereLines(6, 6, 0.5f, Vector3.Zero))
+            _mmi_spheres.multimesh.mesh = _create_mesh(Mesh.PrimitiveType.Lines,
+                DebugDrawImplementation.create_sphere_lines(6, 6, 0.5f, Vector3.Zero))
 
-            _mmi_cylinders.multimesh.mesh = CreateMesh(Mesh.PrimitiveType.Lines,
-                DebugDrawImplementation.CreateCylinderLines(52, 0.5f, 1, Vector3.Zero, 4))
-        }
+            _mmi_cylinders.multimesh.mesh = _create_mesh(Mesh.PrimitiveType.Lines,
+                DebugDrawImplementation.create_cylinder_lines(52, 0.5f, 1, Vector3.Zero, 4))
 
-        MultiMeshInstance CreateMMI(Node root, String name)
-        {
+        func _create_mmi(root: Node, name: String) -> MultiMeshInstance:
             var mmi = new MultiMeshInstance()
             {
                 Name = name,
@@ -954,10 +951,8 @@ namespace DebugDrawInternalFunctionality
             root.AddChild(mmi)
             all_mmi_with_values.Add(mmi, new HashSet<DelayedRendererInstance>())
             return mmi
-        }
 
-        ArrayMesh CreateMesh(Mesh.PrimitiveType type, Vector3[] vertices, int[] indices = null, Color[] colors = null)
-        {
+        func _create_mesh(Mesh.PrimitiveType type, Vector3[] vertices, int[] indices = null, Color[] colors = null) -> ArrayMesh:
             var mesh = new ArrayMesh()
             var a = new GDArray()
             a.Resize((int)ArrayMesh.ArrayType.Max)
@@ -971,26 +966,20 @@ namespace DebugDrawInternalFunctionality
             mesh.AddSurfaceFromArrays(type, a)
 
             return mesh
-        }
 
-        public void Deinit()
-        {
+        # TODO
+        func Deinit() -> void:
             all_mmi_with_values.Clear()
 
-            foreach (var p in all_mmi_with_values)
+            foreach (var p in all_mmi_with_values):
                 p.Key?.queue_free()
-        }
 
-        public void ClearInstances()
-        {
-            foreach (var item in all_mmi_with_values)
+        func clear_instances() -> void:
+            foreach (var item in all_mmi_with_values):
                 item.Value.Clear()
-        }
 
-        public void RemoveExpired(Action<DelayedRendererInstance> returnFunc)
-        {
-            foreach (var item in all_mmi_with_values)
-            {
+        func remove_expired(Action<DelayedRendererInstance> returnFunc) -> void:
+            foreach (var item in all_mmi_with_values):
                 item.Value.RemoveWhere((o) =>
                 {
                     if (o == null || o.IsExpired())
@@ -1000,56 +989,38 @@ namespace DebugDrawInternalFunctionality
                     }
                     return false
                 })
-            }
-        }
 
-        public void UpdateVisibility(Plane[] frustum)
-        {
-            Parallel.ForEach(all_mmi_with_values, (item) => UpdateVisibilityInternal(item.Value, frustum))
-        }
+        func update_visibility(Plane[] frustum) -> void:
+            Parallel.ForEach(all_mmi_with_values, (item) => _update_visibility_internal(item.Value, frustum))
 
-        public void UpdateInstances()
-        {
-            foreach (var item in all_mmi_with_values)
-                UpdateInstancesInternal(item.Key, item.Value)
-        }
+        func update_instances() -> void:
+            foreach (var item in all_mmi_with_values):
+                _update_instances_internal(item.Key, item.Value)
 
-        public void HideAll()
-        {
-            foreach (var item in all_mmi_with_values)
+        func hide_all() -> void:
+            foreach (var item in all_mmi_with_values):
                 item.Key.Multimesh.VisibleInstanceCount = 0
-        }
 
-        void UpdateInstancesInternal(MultiMeshInstance mmi, HashSet<DelayedRendererInstance> instances)
-        {
-            if (instances.Count > 0)
-            {
+        func _update_instances_internal(MultiMeshInstance mmi, HashSet<DelayedRendererInstance> instances) -> void:
+            if instances.Count > 0:
                 if (mmi.Multimesh.InstanceCount < instances.Count)
                     mmi.Multimesh.InstanceCount = instances.Count
                 mmi.Multimesh.VisibleInstanceCount = instances.Sum((inst) => inst.is_visible ? 1 : 0)
                 addRenderedObjects?.Invoke(mmi.Multimesh.VisibleInstanceCount)
 
                 int i = 0
-                foreach (var d in instances)
-                {
+                foreach (var d in instances):
                     d.is_used_one_time = true
-                    if (d.is_visible)
-                    {
+                    if d.is_visible:
                         mmi.Multimesh.SetInstanceTransform(i, d.InstanceTransform)
                         mmi.Multimesh.SetInstanceColor(i, d.InstanceColor)
                         i++
-                    }
-                }
-            }
-            else
+            else:
                 mmi.Multimesh.VisibleInstanceCount = 0
-        }
 
-        void UpdateVisibilityInternal(HashSet<DelayedRendererInstance> instances, Plane[] frustum)
-        {
-            foreach (var _mesh in instances)
-                _mesh.is_visible = DebugDrawImplementation.BoundsPartiallyInsideConvexShape(_mesh.Bounds, frustum)
-        }
+        func _update_visibility_internal(HashSet<DelayedRendererInstance> instances, Plane[] frustum) -> void:
+            foreach (var _mesh in instances):
+                _mesh.is_visible = DebugDrawImplementation.bounds_partially_inside_convex_shape(_mesh.Bounds, frustum)
     }
 
     # https://docs.microsoft.com/en-gb/dotnet/standard/collections/thread-safe/how-to-create-an-object-pool
@@ -1075,8 +1046,7 @@ namespace DebugDrawInternalFunctionality
     #     }
     # }
 
-    class DebugDrawImplementation : IDisposable
-    {
+    class DebugDrawImplementation extends IDisposable:
         # 2D
 
         public Node2D CanvasItemInternal { get private set } = null
@@ -1096,7 +1066,7 @@ namespace DebugDrawInternalFunctionality
 
         #region Predefined Geometry Parts
 
-        public static float CubeDiaganolLengthForSphere = (Vector3.One * 0.5f).Length()
+        public static float CubeDiagonalLengthForSphere = (Vector3.One * 0.5f).Length()
 
         public static Vector3[] CenteredCubeVertices = new Vector3[]{
             new Vector3(-0.5f, -0.5f, -0.5f),
@@ -1373,7 +1343,7 @@ namespace DebugDrawInternalFunctionality
                 })
 
                 # Clean instances
-                _mmc.RemoveExpired((o) => _poolInstanceRenderers.Return(o))
+                _mmc.remove_expired((o) => _poolInstanceRenderers.Return(o))
             }
 
             # FPS Graph
@@ -1409,7 +1379,7 @@ namespace DebugDrawInternalFunctionality
             # Return if nothing to do
             if not DebugDraw.DebugEnabled:
                 lock (dataLock)
-                    _mmc?.HideAll()
+                    _mmc?.hide_all()
                 return
 
             # Get camera frustum
@@ -1432,9 +1402,9 @@ namespace DebugDrawInternalFunctionality
                 if DebugDraw.UseFrustumCulling and f != null:
                     # Update immediate geometry
                     foreach (var _lines in _wireMeshes)
-                        _lines.is_visible = BoundsPartiallyInsideConvexShape(_lines.Bounds, f)
+                        _lines.is_visible = bounds_partially_inside_convex_shape(_lines.Bounds, f)
                     # Update meshes
-                    _mmc.UpdateVisibility(f)
+                    _mmc.update_visibility(f)
 
                 _immediateGeometry.Begin(Mesh.PrimitiveType.Lines)
                 # Line drawing much faster with only one Begin/End call
@@ -1456,20 +1426,19 @@ namespace DebugDrawInternalFunctionality
                 _immediateGeometry.End()
 
                 {   # Debug bounds
-                    #_immediateGeometry.Begin(Mesh.PrimitiveType.Lines) foreach (var l in _wire_meshes) __DrawDebugBoundsForDebugLinePrimitives(l) _immediateGeometry.End()
-                    #foreach (var l in _mmc.Cubes.ToArray()) DrawDebugBoundsForDebugInstancePrimitives(l)
-                    #foreach (var l in _mmc.CubesCentered.ToArray()) DrawDebugBoundsForDebugInstancePrimitives(l)
-                    #foreach (var l in _mmc.BillboardSquares.ToArray()) DrawDebugBoundsForDebugInstancePrimitives(l)
-                    #foreach (var l in _mmc.Arrowheads.ToArray()) DrawDebugBoundsForDebugInstancePrimitives(l)
-                    #foreach (var l in _mmc.Positions.ToArray()) DrawDebugBoundsForDebugInstancePrimitives(l)
-                    #foreach (var l in _mmc.Spheres.ToArray()) DrawDebugBoundsForDebugInstancePrimitives(l)
-                    #foreach (var l in _mmc.Cylinders.ToArray()) DrawDebugBoundsForDebugInstancePrimitives(l)
+                    #_immediateGeometry.Begin(Mesh.PrimitiveType.Lines) foreach (var l in _wire_meshes) ___draw_debug_bounds_for_debug_line_primitives(l) _immediateGeometry.End()
+                    #foreach (var l in _mmc.Cubes.ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
+                    #foreach (var l in _mmc.CubesCentered.ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
+                    #foreach (var l in _mmc.BillboardSquares.ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
+                    #foreach (var l in _mmc.Arrowheads.ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
+                    #foreach (var l in _mmc.Positions.ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
+                    #foreach (var l in _mmc.Spheres.ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
+                    #foreach (var l in _mmc.Cylinders.ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
                 }
 
                 # Update MultiMeshInstances
-                _mmc.UpdateInstances()
+                _mmc.update_instances()
             }
-        }
 
         func on_canvas_item_draw(ci: CanvasItem) -> void:
             if not DebugDraw.DebugEnabled:
@@ -1565,7 +1534,7 @@ namespace DebugDrawInternalFunctionality
             lock (dataLock)
             {
                 _wireMeshes.Clear()
-                _mmc?.ClearInstances()
+                _mmc?.clear_instances()
             }
 
         func clear_2d_objects_internal() -> void:
@@ -1705,13 +1674,13 @@ namespace DebugDrawInternalFunctionality
         func draw_aabb_internal(ref AABB box, ref Color? color, float duration) -> void:
             if not DebugDraw.DebugEnabled:
                 return
-            GetDiagonalVectors(box.Position, box.End, out Vector3 bottom, out _, out Vector3 diag)
+            get_diagonal_vectors(box.Position, box.End, out Vector3 bottom, out _, out Vector3 diag)
             draw_box_internal(ref bottom, ref diag, ref color, duration, false)
 
         func draw_aabb_internal(ref Vector3 a, ref Vector3 b, ref Color? color, float duration) -> void:
             if not DebugDraw.DebugEnabled:
                 return
-            GetDiagonalVectors(a, b, out Vector3 bottom, out _, out Vector3 diag)
+            get_diagonal_vectors(a, b, out Vector3 bottom, out _, out Vector3 diag)
             draw_box_internal(ref bottom, ref diag, ref color, duration, false)
 
         #endregion # Boxes
@@ -1752,7 +1721,7 @@ namespace DebugDrawInternalFunctionality
                     inst.InstanceTransform = t
                     inst.InstanceColor = hitColor ?? DebugDraw.LineHitColor
                     inst.Bounds.Position = t.origin
-                    inst.Bounds.Radius = CubeDiaganolLengthForSphere * hitSize
+                    inst.Bounds.Radius = CubeDiagonalLengthForSphere * hitSize
                     inst.expiration_time = time
 
                     _mmc?.BillboardSquares.Add(inst)
@@ -1786,14 +1755,14 @@ namespace DebugDrawInternalFunctionality
                 _wireMeshes.Add(line)
             }
 
-        func draw_ray_3d_internal(Vector3 origin, Vector3 direction, float length, Color? color, float duration) -> void:
+        func draw_ray_3d_internal(origin: Vector3, direction: Vector3, length: float, color: Color?, duration: float) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
             var end = origin + direction * length
             draw_line_3d_internal(ref origin, ref end, ref color, duration)
 
-        func draw_line_path_3d_internal(IList<Vector3> path, Color? color, float duration = 0f) -> void:
+        func draw_line_path_3d_internal(path: IList<Vector3>, color: Color?, duration: float = 0f) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1803,7 +1772,7 @@ namespace DebugDrawInternalFunctionality
             {
                 var line = _poolWiredRenderers.Get()
 
-                line.Lines = CreateLinesFromPath(path)
+                line.Lines = create_lines_from_path(path)
                 line.LinesColor = color ?? Colors.LightGreen
                 line.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
@@ -1820,7 +1789,7 @@ namespace DebugDrawInternalFunctionality
 
         #region Arrows
 
-        func draw_arrow_line_3d_internal(Vector3 a, Vector3 b, Color? color, float duration, float arrowSize, bool absoluteSize) -> void:
+        func draw_arrow_line_3d_internal(a: Vector3, b: Vector3, color: Color?, duration: float, arrowSize: float, absoluteSize: bool) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1832,9 +1801,9 @@ namespace DebugDrawInternalFunctionality
 
             _wireMeshes.Add(line)
 
-            GenerateArrowheadInstance(ref a, ref b, ref color, ref duration, ref arrowSize, ref absoluteSize)
+            _generate_arrowhead_instance(ref a, ref b, ref color, ref duration, ref arrowSize, ref absoluteSize)
 
-        func draw_arrow_ray_3d_internal(Vector3 origin, Vector3 direction, float length, Color? color, float duration, float arrowSize, bool absoluteSize) -> void:
+        func draw_arrow_ray_3d_internal(origin: Vector3, direction: Vector3, length: float, color: Color?, duration: float, arrowSize: float, absoluteSize: bool) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1847,7 +1816,7 @@ namespace DebugDrawInternalFunctionality
             if (path == null || path.Count < 2) return
 
             var line = _poolWiredRenderers.Get()
-            line.Lines = CreateLinesFromPath(path)
+            line.Lines = create_lines_from_path(path)
             line.LinesColor = color ?? Colors.LightGreen
             line.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
             _wireMeshes.Add(line)
@@ -1855,7 +1824,7 @@ namespace DebugDrawInternalFunctionality
             for (int i = 0 i < path.Count - 1 i++)
             {
                 Vector3 a = path[i], b = path[i + 1]
-                GenerateArrowheadInstance(ref a, ref b, ref color, ref duration, ref arrowSize, ref absoluteSize)
+                _generate_arrowhead_instance(ref a, ref b, ref color, ref duration, ref arrowSize, ref absoluteSize)
             }
 
         func draw_arrow_path_3d_internal(ref Color? color, float duration, float arrowSize, bool absoluteSize, params Vector3[] path) -> void:
@@ -1883,7 +1852,7 @@ namespace DebugDrawInternalFunctionality
                 inst.InstanceTransform = t
                 inst.InstanceColor = color ?? Colors.Red
                 inst.Bounds.Position = t.origin
-                inst.Bounds.Radius = CubeDiaganolLengthForSphere * size
+                inst.Bounds.Radius = CubeDiagonalLengthForSphere * size
                 inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
                 _mmc?.BillboardSquares.Add(inst)
@@ -1922,7 +1891,7 @@ namespace DebugDrawInternalFunctionality
             {
                 var line = _poolWiredRenderers.Get()
 
-                line.Lines = CreateCameraFrustumLines(planes)
+                line.Lines = create_camera_frustum_lines(planes)
                 line.LinesColor = color ?? Colors.DarkSalmon
                 line.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
@@ -1943,7 +1912,7 @@ namespace DebugDrawInternalFunctionality
                 inst.InstanceTransform = transform
                 inst.InstanceColor = color ?? Colors.Crimson
                 inst.Bounds.Position = transform.origin
-                inst.Bounds.Radius = GetMaxValue(ref s) * 0.5f
+                inst.Bounds.Radius = _get_max_value(ref s) * 0.5f
                 inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
                 _mmc?.Positions.Add(inst)
@@ -2032,24 +2001,19 @@ namespace DebugDrawInternalFunctionality
 
         #region Utilities
 
-        void DrawDebugBoundsForDebugLinePrimitives(DelayedRendererLine dr)
-        {
-            if (!dr.is_visible)
+        func _draw_debug_bounds_for_debug_line_primitives(dr: DelayedRendererLine) -> void:
+            if not dr.is_visible:
                 return
 
-            var _lines = CreateCubeLines(dr.Bounds.Position, Quat.Identity, dr.Bounds.Size, false, true)
+            var _lines = create_cube_lines(dr.Bounds.Position, Quat.Identity, dr.Bounds.Size, false, true)
 
             renderWireframes++
             _immediateGeometry.SetColor(Colors.Orange)
-            foreach (var l in _lines)
-            {
+            foreach (var l in _lines):
                 _immediateGeometry.AddVertex(l)
-            }
-        }
 
-        void DrawDebugBoundsForDebugInstancePrimitives(DelayedRendererInstance dr)
-        {
-            if (!dr.is_visible)
+        func _draw_debug_bounds_for_debug_instance_primitive(dr: DelayedRendererInstance) -> void:
+            if not dr.is_visible:
                 return
 
             renderInstances++
@@ -2057,10 +2021,8 @@ namespace DebugDrawInternalFunctionality
             var r = dr.Bounds.Radius
             Color? c = Colors.DarkOrange
             draw_sphere_internal(ref p, r, ref c, 0)
-        }
 
-        void GenerateArrowheadInstance(ref Vector3 a, ref Vector3 b, ref Color? color, ref float duration, ref float arrowSize, ref bool absoluteSize)
-        {
+        func _generate_arrowhead_instance(ref Vector3 a, ref Vector3 b, ref Color? color, ref float duration, ref float arrowSize, ref bool absoluteSize) -> void:
             lock (dataLock)
             {
                 var offset = (b - a)
@@ -2074,21 +2036,18 @@ namespace DebugDrawInternalFunctionality
                 inst.InstanceTransform = t
                 inst.InstanceColor = color ?? Colors.LightGreen
                 inst.Bounds.Position = t.origin - t.basis.z * 0.5f
-                inst.Bounds.Radius = CubeDiaganolLengthForSphere * length
+                inst.Bounds.Radius = CubeDiagonalLengthForSphere * length
                 inst.expiration_time = time
 
                 _mmc?.Arrowheads.Add(inst)
             }
-        }
 
         # Broken converter from Transform and Color to raw float[]
-        static float[] GetRawMultiMeshTransforms(ISet<DelayedRendererInstance> instances)
-        {
+        static func _get_raw_multimesh_transforms(instances: ISet<DelayedRendererInstance>) -> float[]:
             float[] res = new float[instances.Count * 16]
             int index = 0
 
-            foreach (var i in instances)
-            {
+            foreach (var i in instances):
                 i.is_used_one_time = true # needed for proper clear
                 int idx = index
                 index += 16
@@ -2101,16 +2060,13 @@ namespace DebugDrawInternalFunctionality
                 res[idx + 10] = i.InstanceTransform.origin.y res[idx + 11] = i.InstanceTransform.origin.z
                 res[idx + 12] = i.InstanceColor.r res[idx + 13] = i.InstanceColor.g
                 res[idx + 14] = i.InstanceColor.b res[idx + 15] = i.InstanceColor.a
-            }
 
             return res
-        }
 
         #region Geometry Generation
 
-        public static Vector3[] CreateCameraFrustumLines(Plane[] frustum)
-        {
-            if (frustum.Length != 6)
+        static func create_camera_frustum_lines(frustum: Plane[]) -> Vector3[]:
+            if frustum.Length != 6:
                 return Array.Empty<Vector3>()
 
             Vector3[] res = new Vector3[CubeIndices.Length]
@@ -2127,58 +2083,51 @@ namespace DebugDrawInternalFunctionality
             frustum[1].Intersect3(frustum[3], frustum[4]).Value,
             frustum[1].Intersect3(frustum[5], frustum[4]).Value,
             frustum[1].Intersect3(frustum[5], frustum[2]).Value,
-        }
 
-            for (int i = 0 i < res.Length i++) res[i] = cube[CubeIndices[i]]
+            for (int i = 0 i < res.Length i++)
+                res[i] = cube[CubeIndices[i]]
 
             return res
-        }
 
-        public static Vector3[] CreateCubeLines(Vector3 position, Quat rotation, Vector3 size, bool centeredBox = true, bool withDiagonals = false)
-        {
+        static func create_cube_lines(position: Vector3, rotation: Quat, size: Vector3, centeredBox: bool = true, withDiagonals: bool = false) -> Vector3[]:
             Vector3[] scaled = new Vector3[8]
             Vector3[] res = new Vector3[withDiagonals ? CubeWithDiagonalsIndices.Length : CubeIndices.Length]
 
             bool dont_rot = rotation == Quat.Identity
 
             Func<int, Vector3> get
-            if (centeredBox)
-            {
-                if (dont_rot)
+            if centeredBox:
+                if dont_rot:
                     get = (idx) => CenteredCubeVertices[idx] * size + position
-                else
+                else:
                     get = (idx) => rotation.Xform(CenteredCubeVertices[idx] * size) + position
-            }
-            else
-            {
-                if (dont_rot)
+            else:
+                if dont_rot:
                     get = (idx) => CubeVertices[idx] * size + position
-                else
+                else:
                     get = (idx) => rotation.Xform(CubeVertices[idx] * size) + position
-            }
 
-            for (int i = 0 i < 8 i++)
+            for (int i = 0 i < 8 i++):
                 scaled[i] = get(i)
 
-            if (withDiagonals)
-                for (int i = 0 i < res.Length i++) res[i] = scaled[CubeWithDiagonalsIndices[i]]
-            else
-                for (int i = 0 i < res.Length i++) res[i] = scaled[CubeIndices[i]]
+            if withDiagonals:
+                for (int i = 0 i < res.Length i++):
+                    res[i] = scaled[CubeWithDiagonalsIndices[i]]
+            else:
+                for (int i = 0 i < res.Length i++):
+                    res[i] = scaled[CubeIndices[i]]
 
             return res
-        }
 
-        public static Vector3[] CreateSphereLines(int lats, int lons, float radius, Vector3 position)
-        {
-            if (lats < 2)
+        static func create_sphere_lines(lats: int, lons: int, radius: float, position: Vector3) -> Vector3[]:
+            if lats < 2:
                 lats = 2
-            if (lons < 4)
+            if lons < 4:
                 lons = 4
 
             Vector3[] res = new Vector3[lats * lons * 6]
             int total = 0
-            for (int i = 1 i <= lats i++)
-            {
+            for (int i = 1 i <= lats i++):
                 float lat0 = Mathf.Pi * (-0.5f + (float)(i - 1) / lats)
                 float z0 = Mathf.Sin(lat0)
                 float zr0 = Mathf.Cos(lat0)
@@ -2187,8 +2136,7 @@ namespace DebugDrawInternalFunctionality
                 float z1 = Mathf.Sin(lat1)
                 float zr1 = Mathf.Cos(lat1)
 
-                for (int j = lons j >= 1 j--)
-                {
+                for (int j = lons j >= 1 j--):
                     float lng0 = 2 * Mathf.Pi * (j - 1) / lons
                     float x0 = Mathf.Cos(lng0)
                     float y0 = Mathf.Sin(lng0)
@@ -2198,11 +2146,11 @@ namespace DebugDrawInternalFunctionality
                     float y1 = Mathf.Sin(lng1)
 
                     Vector3[] v = new Vector3[]{
-                    new Vector3(x1 * zr0, z0, y1 * zr0) * radius + position,
-                    new Vector3(x1 * zr1, z1, y1 * zr1) * radius + position,
-                    new Vector3(x0 * zr1, z1, y0 * zr1) * radius + position,
-                    new Vector3(x0 * zr0, z0, y0 * zr0) * radius + position
-                }
+                        new Vector3(x1 * zr0, z0, y1 * zr0) * radius + position,
+                        new Vector3(x1 * zr1, z1, y1 * zr1) * radius + position,
+                        new Vector3(x0 * zr1, z1, y0 * zr1) * radius + position,
+                        new Vector3(x0 * zr0, z0, y0 * zr0) * radius + position
+                    }
 
                     res[total++] = v[0]
                     res[total++] = v[1]
@@ -2211,20 +2159,16 @@ namespace DebugDrawInternalFunctionality
                     res[total++] = v[2]
                     res[total++] = v[3]
                     res[total++] = v[0]
-                }
-            }
-            return res
-        }
 
-        public static Vector3[] CreateCylinderLines(int edges, float radius, float height, Vector3 position, int drawEdgeEachNStep = 1)
-        {
+            return res
+
+        static func create_cylinder_lines(edges: int, radius: float, height: float, position: Vector3, drawEdgeEachNStep: int = 1) -> Vector3[]:
             var angle = 360f / edges
 
             List<Vector3> points = new List<Vector3>()
 
             Vector3 d = new Vector3(0, height * 0.5f, 0)
-            for (int i = 0 i < edges i++)
-            {
+            for (int i = 0 i < edges i++):
                 float ra = Mathf.Deg2Rad(i * angle)
                 float rb = Mathf.Deg2Rad((i + 1) * angle)
                 Vector3 a = new Vector3(Mathf.Sin(ra), 0, Mathf.Cos(ra)) * radius + position
@@ -2239,73 +2183,50 @@ namespace DebugDrawInternalFunctionality
                 points.Add(b - d)
 
                 # Edge
-                if (i % drawEdgeEachNStep == 0)
-                {
+                if (i % drawEdgeEachNStep == 0):
                     points.Add(a + d)
                     points.Add(a - d)
-                }
-            }
 
             return points.ToArray()
-        }
 
-        public static Vector3[] CreateLinesFromPath(IList<Vector3> path)
-        {
+        static func create_lines_from_path(path: IList<Vector3>) -> Vector3[]:
             var res = new Vector3[(path.Count - 1) * 2]
 
-            for (int i = 1 i < path.Count - 1 i++)
-            {
+            for (int i = 1 i < path.Count - 1 i++):
                 res[i * 2] = path[i]
                 res[i * 2 + 1] = path[i + 1]
-            }
             return res
-        }
 
         #endregion # Geometry Generation
 
-        public static void GetDiagonalVectors(Vector3 a, Vector3 b, out Vector3 bottom, out Vector3 top, out Vector3 diag)
-        {
+        static func get_diagonal_vectors(Vector3 a, Vector3 b, out Vector3 bottom, out Vector3 top, out Vector3 diag) -> void:
             bottom = Vector3.Zero
             top = Vector3.Zero
 
-            if (a.x > b.x)
-            {
+            if a.x > b.x:
                 top.x = a.x
                 bottom.x = b.x
-            }
-            else
-            {
+            else:
                 top.x = b.x
                 bottom.x = a.x
-            }
 
-            if (a.y > b.y)
-            {
+            if a.y > b.y:
                 top.y = a.y
                 bottom.y = b.y
-            }
-            else
-            {
+            else:
                 top.y = b.y
                 bottom.y = a.y
-            }
 
-            if (a.z > b.z)
-            {
+            if a.z > b.z:
                 top.z = a.z
                 bottom.z = b.z
-            }
-            else
-            {
+            else:
                 top.z = b.z
                 bottom.z = a.z
-            }
 
             diag = top - bottom
-        }
 
-        public static bool BoundsPartiallyInsideConvexShape(AABB bounds, IList<Plane> planes)
-        {
+        static func bounds_partially_inside_convex_shape(bounds: AABB, planes: IList<Plane>) -> bool:
             var extent = bounds.Size * 0.5f
             var center = bounds.Position + extent
             foreach (var p in planes)
@@ -2318,21 +2239,16 @@ namespace DebugDrawInternalFunctionality
                     return false
 
             return true
-        }
 
-        public static bool BoundsPartiallyInsideConvexShape(SphereBounds sphere, IList<Plane> planes)
-        {
-            foreach (var p in planes)
-                if (p.DistanceTo(sphere.Position) >= sphere.Radius)
+        static func bounds_partially_inside_convex_shape(sphere: SphereBounds, planes: IList<Plane>) -> bool:
+            for p in planes:
+                if p.DistanceTo(sphere.Position) >= sphere.Radius:
                     return false
 
             return true
-        }
 
-        static float GetMaxValue(ref Vector3 value)
-        {
+        static func _get_max_value(ref Vector3 value) -> float:
             return Math.Max(Math.Abs(value.x), Math.Max(Math.Abs(value.y), Math.Abs(value.z)))
-        }
 
         #endregion # Utilities
 
