@@ -42,20 +42,20 @@ No need to warry about removing or disabling functionality of this addon in expo
 
 Example (information about all public static functions and properties is present inside the script):
 
-```csharp
+```
 public override void _Process(float delta)
 {
     var time = OS.GetTicksMsec() / 1000f;
-    var box_pos = new Vector3(0, Mathf.Sin(time * 4f), 0);
-    var line_begin = new Vector3(-1, Mathf.Sin(time * 4f), 0);
-    var line_end = new Vector3(1, Mathf.Cos(time * 4f), 0);
+    var box_pos = Vector3(0, sin(time * 4f), 0);
+    var line_begin = Vector3(-1, sin(time * 4f), 0);
+    var line_end = Vector3(1, cos(time * 4f), 0);
 
-    DebugDraw.DrawBox(box_pos, new Vector3(1, 2, 1), new Color(0, 1, 0), 0, false);
-    DebugDraw.DrawLine3D(line_begin, line_end, new Color(1, 1, 0));
-    DebugDraw.SetText("Time", time);
-    DebugDraw.SetText("Frames drawn", Engine.GetFramesDrawn());
-    DebugDraw.SetText("FPS", Engine.GetFramesPerSecond());
-    DebugDraw.SetText("delta", delta);
+    DebugDraw.draw_box(box_pos, Vector3(1, 2, 1), Color(0, 1, 0), 0, false);
+    DebugDraw.draw_line_3d(line_begin, line_end, Color(1, 1, 0));
+    DebugDraw.set_text("Time", time);
+    DebugDraw.set_text("Frames drawn", Engine.GetFramesDrawn());
+    DebugDraw.set_text("FPS", Engine.GetFramesPerSecond());
+    DebugDraw.set_text("delta", delta);
 }
 ```
 

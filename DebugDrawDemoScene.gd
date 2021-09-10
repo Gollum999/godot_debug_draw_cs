@@ -14,12 +14,12 @@ func _process(delta: float) -> void:
     # Zylann's example :D
     if ZylannExample:
         var time = OS.GetTicksMsec() / 1000f
-        var box_pos = new Vector3(0, Mathf.Sin(time * 4f), 0)
-        var line_begin = new Vector3(-1, Mathf.Sin(time * 4f), 0)
-        var line_end = new Vector3(1, Mathf.Cos(time * 4f), 0)
+        var box_pos = Vector3(0, sin(time * 4f), 0)
+        var line_begin = Vector3(-1, sin(time * 4f), 0)
+        var line_end = Vector3(1, cos(time * 4f), 0)
 
-        DebugDraw.draw_box(box_pos, new Vector3(1, 2, 1), new Color(0, 1, 0), 0, false) # Box need to be NOT centered
-        DebugDraw.draw_line_3d(line_begin, line_end, new Color(1, 1, 0))
+        DebugDraw.draw_box(box_pos, Vector3(1, 2, 1), Color(0, 1, 0), 0, false) # Box need to be NOT centered
+        DebugDraw.draw_line_3d(line_begin, line_end, Color(1, 1, 0))
         DebugDraw.set_text("Time", time)
         DebugDraw.set_text("Frames drawn", Engine.GetFramesDrawn())
         DebugDraw.set_text("FPS", Engine.GetFramesPerSecond())
@@ -29,8 +29,8 @@ func _process(delta: float) -> void:
 
     # Enable FPSGraph
     DebugDraw.FPSGraphEnabled = true
-    DebugDraw.FPSGraphShowTextFlags = DebugDraw.FPSGraphTextFlags.Current | DebugDraw.FPSGraphTextFlags.Max | DebugDraw.FPSGraphTextFlags.Min
-    DebugDraw.FPSGraphSize = new Vector2(200, 32)
+    DebugDraw.FPSGraphShowTextFlags = DebugDraw.FPSGraphTextFlags.CURRENT | DebugDraw.FPSGraphTextFlags.MAX | DebugDraw.FPSGraphTextFlags.MIN
+    DebugDraw.FPSGraphSize = Vector2(200, 32)
 
     # Debug for debug
     DebugDraw.Freeze3DRender = Input.IsActionPressed("ui_accept")
@@ -38,80 +38,80 @@ func _process(delta: float) -> void:
     DebugDraw.DebugEnabled = !Input.IsActionPressed("ui_down")
 
     # Zones
-    var col = Colors.Black
-    foreach (Spatial z in GetNode<Spatial>("Zones").GetChildren()):
+    var col = Color.black
+    foreach (Spatial z in get_node("Zones").get_children()):
         DebugDraw.draw_box(z.GlobalTransform, col)
 
     # Spheres
     {
-        DebugDraw.draw_sphere(GetNode<Spatial>("SphereTransform").GlobalTransform, Colors.Crimson)
-        DebugDraw.draw_sphere(GetNode<Spatial>("SpherePosition").GlobalTransform.origin, 2, Colors.BlueViolet)
+        DebugDraw.draw_sphere(get_node("SphereTransform").GlobalTransform, Color.crimson)
+        DebugDraw.draw_sphere(get_node("SpherePosition").GlobalTransform.origin, 2, Color.blueviolet)
     }
 
     # Cylinders
     {
-        DebugDraw.draw_cylinder(GetNode<Spatial>("Cylinder1").GlobalTransform, Colors.Crimson)
-        DebugDraw.draw_cylinder(GetNode<Spatial>("Cylinder2").GlobalTransform.origin, 1, 2, Colors.Red)
+        DebugDraw.draw_cylinder(get_node("Cylinder1").GlobalTransform, Color.crimson)
+        DebugDraw.draw_cylinder(get_node("Cylinder2").GlobalTransform.origin, 1, 2, Color.red)
     }
 
     # Boxes
     {
-        DebugDraw.draw_box(GetNode<Spatial>("Box1").GlobalTransform, Colors.Purple)
-        DebugDraw.draw_box(GetNode<Spatial>("Box2").GlobalTransform.origin, Vector3.One, Colors.RebeccaPurple)
-        DebugDraw.draw_box(GetNode<Spatial>("Box3").GlobalTransform.origin, new Quat(Vector3.Up, Mathf.Pi * 0.25f), Vector3.One * 2, Colors.RosyBrown)
+        DebugDraw.draw_box(get_node("Box1").GlobalTransform, Color.purple)
+        DebugDraw.draw_box(get_node("Box2").GlobalTransform.origin, Vector3.One, Color.rebeccapurple)
+        DebugDraw.draw_box(get_node("Box3").GlobalTransform.origin, Quat.new(Vector3.Up, PI * 0.25f), Vector3.One * 2, Color.rosybrown)
 
-        var r = GetNode<Spatial>("AABB")
-        DebugDraw.draw_aabb(r.GetChild<Spatial>(0).GlobalTransform.origin, r.GetChild<Spatial>(1).GlobalTransform.origin, Colors.DeepPink)
+        var r = get_node("AABB")
+        DebugDraw.draw_aabb(r.GetChild<Spatial>(0).GlobalTransform.origin, r.GetChild<Spatial>(1).GlobalTransform.origin, Color.deeppink)
 
-        DebugDraw.draw_aabb(new AABB(GetNode<Spatial>("AABB_fixed").GlobalTransform.origin, new Vector3(2, 1, 2)), Colors.Aqua)
+        DebugDraw.draw_aabb(AABB(get_node("AABB_fixed").GlobalTransform.origin, Vector3(2, 1, 2)), Color.aqua)
     }
 
     # Lines
     {
-        var target = GetNode<Spatial>("Lines/Target")
-        DebugDraw.draw_billboard_square(target.GlobalTransform.origin, 0.5f, Colors.Red)
+        var target = get_node("Lines/Target")
+        DebugDraw.draw_billboard_square(target.GlobalTransform.origin, 0.5f, Color.red)
 
         # Normal
         {
-            DebugDraw.draw_line_3d(GetNode<Spatial>("Lines/1").GlobalTransform.origin, target.GlobalTransform.origin, Colors.Fuchsia)
-            DebugDraw.draw_ray_3d(GetNode<Spatial>("Lines/3").GlobalTransform.origin, (target.GlobalTransform.origin - GetNode<Spatial>("Lines/3").GlobalTransform.origin).normalized(), 3f, Colors.Crimson)
+            DebugDraw.draw_line_3d(get_node("Lines/1").GlobalTransform.origin, target.GlobalTransform.origin, Color.fuchsia)
+            DebugDraw.draw_ray_3d(get_node("Lines/3").GlobalTransform.origin, (target.GlobalTransform.origin - get_node("Lines/3").GlobalTransform.origin).normalized(), 3f, Color.crimson)
         }
 
         # Arrow
         {
-            DebugDraw.draw_arrow_line_3d(GetNode<Spatial>("Lines/2").GlobalTransform.origin, target.GlobalTransform.origin, Colors.Blue)
-            DebugDraw.draw_arrow_ray_3d(GetNode<Spatial>("Lines/4").GlobalTransform.origin, (target.GlobalTransform.origin - GetNode<Spatial>("Lines/4").GlobalTransform.origin).normalized(), 8f, Colors.Lavender)
+            DebugDraw.draw_arrow_line_3d(get_node("Lines/2").GlobalTransform.origin, target.GlobalTransform.origin, Color.blue)
+            DebugDraw.draw_arrow_ray_3d(get_node("Lines/4").GlobalTransform.origin, (target.GlobalTransform.origin - get_node("Lines/4").GlobalTransform.origin).normalized(), 8f, Color.lavender)
         }
 
         # Path
         {
-            DebugDraw.draw_line_path_3d(GetNode<Spatial>("LinePath")?.GetChildren().ToArray<Spatial>().Select((o) => o.GlobalTransform.origin).ToArray(), Colors.Beige)
-            DebugDraw.draw_arrow_path_3d(GetNode<Spatial>("LinePath")?.GetChildren().ToArray<Spatial>().Select((o) => o.GlobalTransform.origin + Vector3.Down).ToArray(), Colors.Gold)
+            DebugDraw.draw_line_path_3d(get_node("LinePath")?.get_children().ToArray<Spatial>().Select((o) => o.GlobalTransform.origin).ToArray(), Color.beige)
+            DebugDraw.draw_arrow_path_3d(get_node("LinePath")?.get_children().ToArray<Spatial>().Select((o) => o.GlobalTransform.origin + Vector3.Down).ToArray(), Color.gold)
         }
 
-        DebugDraw.draw_line_3d_hit(GetNode<Spatial>("Lines/5").GlobalTransform.origin, target.GlobalTransform.origin, true, Mathf.Abs(Mathf.Sin((float)DateTime.Now.TimeOfDay.TotalSeconds)), 0.25f, 0, Colors.Aqua)
+        DebugDraw.draw_line_3d_hit(get_node("Lines/5").GlobalTransform.origin, target.GlobalTransform.origin, true, abs(sin((float)DateTime.Now.TimeOfDay.TotalSeconds)), 0.25f, 0, Color.aqua)
     }
 
     # Misc
     {
-        DebugDraw.draw_camera_frustum(GetNode<Camera>("Camera"), Colors.DarkOrange)
-        DebugDraw.draw_billboard_square(GetNode<Spatial>("Billboard").GlobalTransform.origin, 0.5f, Colors.Green)
-        DebugDraw.draw_position_3d(GetNode<Spatial>("Position").GlobalTransform, Colors.Brown)
+        DebugDraw.draw_camera_frustum(get_node("Camera"), Color.darkorange)
+        DebugDraw.draw_billboard_square(get_node("Billboard").GlobalTransform.origin, 0.5f, Color.green)
+        DebugDraw.draw_position_3d(get_node("Position").GlobalTransform, Color.brown)
     }
 
     # Text
     {
-        DebugDraw.set_text("FPS", $"{Engine.GetFramesPerSecond():F2}", 0, Colors.Gold)
+        DebugDraw.set_text("FPS", $"{Engine.GetFramesPerSecond():F2}", 0, Color.gold)
 
-        DebugDraw.begin_text_group("-- First Group --", 2, Colors.ForestGreen)
+        DebugDraw.begin_text_group("-- First Group --", 2, Color.forestgreen)
         DebugDraw.set_text("Simple text")
-        DebugDraw.set_text("Text", "Value", 0, Colors.Aquamarine)
-        DebugDraw.set_text("Text out of order", null, -1, Colors.Silver)
-        DebugDraw.begin_text_group("-- Second Group --", 1, Colors.Beige)
+        DebugDraw.set_text("Text", "Value", 0, Color.aquamarine)
+        DebugDraw.set_text("Text out of order", null, -1, Color.silver)
+        DebugDraw.begin_text_group("-- Second Group --", 1, Color.beige)
         DebugDraw.set_text("Rendered frames", $"{Engine.GetFramesDrawn()}")
         DebugDraw.end_text_group()
 
-        DebugDraw.begin_text_group("-- Stats --", 3, Colors.Wheat)
+        DebugDraw.begin_text_group("-- Stats --", 3, Color.wheat)
         DebugDraw.set_text("Total rendered", DebugDraw.RenderCount.Total, 0)
         DebugDraw.set_text("Instances", DebugDraw.RenderCount.Instances, 1)
         DebugDraw.set_text("Wireframes", DebugDraw.RenderCount.Wireframes, 2)
@@ -121,7 +121,7 @@ func _process(delta: float) -> void:
     # Lag Test
     {
         if not Engine.EditorHint and box != null:
-            box.Translation = start_pos + new Vector3(Mathf.Sin(OS.GetTicksMsec() / 100.0f) * 2.5f, 0, 0)
+            box.Translation = start_pos + Vector3(sin(OS.GetTicksMsec() / 100.0f) * 2.5f, 0, 0)
             DebugDraw.draw_box(box.GlobalTransform.origin, Vector3.One * 2f)
     }
 
@@ -130,8 +130,8 @@ func _process(delta: float) -> void:
 # {
 #     public static T[] ToArray<T>(this Godot.Collections.Array array) where T : Godot.Node, new()
 #     {
-#         var res = new T[array.Count]
-#         for (int i = 0 i < array.Count i++)
+#         var res = new T[array.size()]
+#         for (int i = 0 i < array.size() i++)
 #             res[i] = array[i] as T
 #         return res
 #     }
