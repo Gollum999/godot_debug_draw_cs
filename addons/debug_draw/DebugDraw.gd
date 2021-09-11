@@ -473,7 +473,7 @@ extends Node
     ### <param name="color">Color</param>
     ### <param name="duration">Duration of existence in seconds</param>
     ### <param name="path">Sequence of points</param>
-    static func draw_line_path_3d(Color? color = null, float duration = 0f, params Vector3[] path) -> void:
+    static func draw_line_path_3d(Color? color = null, float duration = 0f, Vector3[] path) -> void:
         if OS.is_debug_build() and internal_instance != null:
             internal_instance.draw_line_path_3d_internal(color, duration, path)
 
@@ -528,7 +528,7 @@ extends Node
     ### <param name="path">Sequence of points</param>
     ### <param name="arrowSize">Size of the arrow</param>
     ### <param name="absoluteSize">Is the <paramref name="arrowSize"/> absolute or relative to the length of the line?</param>
-    static func draw_arrow_path_3d(Color? color = null, float duration = 0f, float arrow_size = 0.75f, bool absolute_size = true, params Vector3[] path) -> void:
+    static func draw_arrow_path_3d(Color? color = null, float duration = 0f, float arrow_size = 0.75f, bool absolute_size = true, Vector3[] path) -> void:
         if OS.is_debug_build() and internal_instance != null:
             internal_instance.draw_arrow_path_3d_internal(color, duration, arrow_size, absolute_size, path)
 
@@ -744,11 +744,11 @@ namespace DebugDrawInternalFunctionality
             set
             {
                 _lines = value
-                bounds = _calculate_bounds_based_on_lines(ref _lines)
+                bounds = _calculate_bounds_based_on_lines(_lines)
             }
         }
 
-        func _calculate_bounds_based_on_lines(ref Vector3[] lines) -> AABB:
+        func _calculate_bounds_based_on_lines(Vector3[] lines) -> AABB:
             if lines.size() > 0:
                 var b = AABB(lines[0], Vector3.ZERO)
                 for v in lines:
@@ -1526,7 +1526,7 @@ namespace DebugDrawInternalFunctionality
 
         #region Spheres
 
-        func draw_sphere_internal(ref Vector3 position, float radius, ref Color? color, float duration) -> void:
+        func draw_sphere_internal(Vector3 position, float radius, Color? color, float duration) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1534,9 +1534,9 @@ namespace DebugDrawInternalFunctionality
             t.origin = position
             t.basis.scale = Vector3.ONE * (radius * 2)
 
-            draw_sphere_internal(ref t, ref color, duration)
+            draw_sphere_internal(t, color, duration)
 
-        func draw_sphere_internal(ref Transform transform, ref Color? color, float duration) -> void:
+        func draw_sphere_internal(Transform transform, Color? color, float duration) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1549,7 +1549,7 @@ namespace DebugDrawInternalFunctionality
                 inst.bounds.radius = transform.basis.scale.length() * 0.5f
                 inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
-                _mmc.get_spheres().Add(inst)
+                _mmc.get_spheres().append(inst)
             }
             _data_mutex.unlock()
 
@@ -1565,7 +1565,7 @@ namespace DebugDrawInternalFunctionality
             t.origin = position
             t.basis.scale = Vector3(radius * 2, height, radius * 2)
 
-            draw_cylinder_internal(ref t, ref color, duration)
+            draw_cylinder_internal(t, color, duration)
 
         func draw_cylinder_internal(transform: Transform, color: Color?, duration: float) -> void:
             if not DebugDraw.DebugEnabled:
@@ -1580,7 +1580,7 @@ namespace DebugDrawInternalFunctionality
                 inst.bounds.radius = transform.basis.scale.length() * 0.5f
                 inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
-                _mmc.get_cylinders().Add(inst)
+                _mmc.get_cylinders().append(inst)
             }
             _data_mutex.unlock()
 
@@ -1588,14 +1588,14 @@ namespace DebugDrawInternalFunctionality
 
         #region Boxes
 
-        func draw_box_internal(ref Vector3 position, ref Vector3 size, ref Color? color, float duration, bool isBoxCentered) -> void:
+        func draw_box_internal(Vector3 position, Vector3 size, Color? color, float duration, bool isBoxCentered) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
             var q = Quat.IDENTITY
-            draw_box_internal(ref position, ref q, ref size, ref color, duration, isBoxCentered)
+            draw_box_internal(position, q, size, color, duration, isBoxCentered)
 
-        func draw_box_internal(ref Vector3 position, ref Quat rotation, ref Vector3 size, ref Color? color, float duration, bool is_box_centered) -> void:
+        func draw_box_internal(Vector3 position, Quat rotation, Vector3 size, Color? color, float duration, bool is_box_centered) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1617,13 +1617,13 @@ namespace DebugDrawInternalFunctionality
                     inst.bounds.position = t.origin + size * 0.5f
 
                 if is_box_centered:
-                    _mmc.get_centered_cubes().Add(inst)
+                    _mmc.get_centered_cubes().append(inst)
                 else:
-                    _mmc.get_cubes().Add(inst)
+                    _mmc.get_cubes().append(inst)
             }
             _data_mutex.unlock()
 
-        func draw_box_internal(ref Transform transform, ref Color? color, float duration, bool is_box_centered) -> void:
+        func draw_box_internal(Transform transform, Color? color, float duration, bool is_box_centered) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1643,19 +1643,19 @@ namespace DebugDrawInternalFunctionality
                     inst.bounds.position = transform.origin + transform.basis.scale * 0.5f
 
                 if is_box_centered:
-                    _mmc.get_centered_cubes().Add(inst)
+                    _mmc.get_centered_cubes().append(inst)
                 else:
-                    _mmc.get_cubes().Add(inst)
+                    _mmc.get_cubes().append(inst)
             }
             _data_mutex.unlock()
 
-        func draw_aabb_internal(ref AABB box, ref Color? color, float duration) -> void:
+        func draw_aabb_internal(AABB box, Color? color, float duration) -> void:
             if not DebugDraw.DebugEnabled:
                 return
             var vectors = get_diagonal_vectors(box.position, box.End)
             draw_box_internal(vectors.bottom, vectors.diag, color, duration, false)
 
-        func draw_aabb_internal(ref Vector3 a, ref Vector3 b, ref Color? color, float duration) -> void:
+        func draw_aabb_internal(Vector3 a, Vector3 b, Color? color, float duration) -> void:
             if not DebugDraw.DebugEnabled:
                 return
             var vectors = get_diagonal_vectors(a, b)
@@ -1665,7 +1665,7 @@ namespace DebugDrawInternalFunctionality
 
         #region Lines
 
-        func draw_line_3d_hit_internal(ref Vector3 a, ref Vector3 b, bool is_hit, float unit_offset_of_hit, float hit_size, float duration, ref Color? hit_color, ref Color? after_hit_color) -> void:
+        func draw_line_3d_hit_internal(Vector3 a, Vector3 b, bool is_hit, float unit_offset_of_hit, float hit_size, float duration, Color? hit_color, Color? after_hit_color) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1701,7 +1701,7 @@ namespace DebugDrawInternalFunctionality
                     inst.bounds.radius = CubeDiagonalLengthForSphere * hit_size
                     inst.expiration_time = time
 
-                    _mmc.get_billboard_squares().Add(inst)
+                    _mmc.get_billboard_squares().append(inst)
                 else:
                     var line = _pool_wired_renderers.Get()
 
@@ -1736,7 +1736,7 @@ namespace DebugDrawInternalFunctionality
                 return
 
             var end = origin + direction * length
-            draw_line_3d_internal(ref origin, ref end, ref color, duration)
+            draw_line_3d_internal(origin, end, color, duration)
 
         func draw_line_path_3d_internal(path: Array, color: Color?, duration: float = 0f) -> void:
             if not DebugDraw.DebugEnabled:
@@ -1757,7 +1757,7 @@ namespace DebugDrawInternalFunctionality
             }
             _data_mutex.unlock()
 
-        func draw_line_path_3d_internal(Color? color, float duration, params Vector3[] path) -> void:
+        func draw_line_path_3d_internal(color: Color?, duration: float, path: Array) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1773,13 +1773,13 @@ namespace DebugDrawInternalFunctionality
 
             var line = _pool_wired_renderers.Get()
 
-            line.Lines = Vector3[] { a, b }
+            line.Lines = [a, b]
             line.lines_color = color if color else Color.lightgreen
             line.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
             _wire_meshes.Add(line)
 
-            _generate_arrowhead_instance(ref a, ref b, ref color, ref duration, ref arrow_size, ref absolute_size)
+            _generate_arrowhead_instance(a, b, color, duration, arrow_size, absolute_size)
 
         func draw_arrow_ray_3d_internal(origin: Vector3, direction: Vector3, length: float, color: Color?, duration: float, arrow_size: float, absolute_size: bool) -> void:
             if not DebugDraw.DebugEnabled:
@@ -1787,7 +1787,7 @@ namespace DebugDrawInternalFunctionality
 
             draw_arrow_line_3d_internal(origin, origin + direction * length, color, duration, arrow_size, absolute_size)
 
-        func draw_arrow_path_3d_internal(Array path, ref Color? color, float duration, float arrow_size, bool absolute_size) -> void:
+        func draw_arrow_path_3d_internal(path: Array, color: Color?, duration: float, arrow_size: float, absolute_size: bool) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1802,20 +1802,20 @@ namespace DebugDrawInternalFunctionality
 
             for i in range(path.size() - 1):
                 Vector3 a = path[i], b = path[i + 1]
-                _generate_arrowhead_instance(ref a, ref b, ref color, ref duration, ref arrow_size, ref absolute_size)
+                _generate_arrowhead_instance(a, b, color, duration, arrow_size, absolute_size)
 
-        func draw_arrow_path_3d_internal(ref Color? color, float duration, float arrow_size, bool absolute_size, params Vector3[] path) -> void:
+        func draw_arrow_path_3d_internal(color: Color?, duration: float, arrow_size: float, absolute_size: bool, path: Array) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
-            draw_arrow_path_3d_internal(path, ref color, duration, arrow_size, absolute_size)
+            draw_arrow_path_3d_internal(path, color, duration, arrow_size, absolute_size)
 
         #endregion # Arrows
         #endregion # Lines
 
         #region Misc
 
-        func draw_billboard_square_internal(ref Vector3 position, float size, ref Color? color, float duration) -> void:
+        func draw_billboard_square_internal(position: Vector3, size: float, color: Color?, duration: float) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1832,22 +1832,22 @@ namespace DebugDrawInternalFunctionality
                 inst.bounds.radius = CubeDiagonalLengthForSphere * size
                 inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
-                _mmc.get_billboard_squares().Add(inst)
+                _mmc.get_billboard_squares().append(inst)
             }
             _data_mutex.unlock()
 
         #region Camera Frustum
 
-        func draw_camera_frustum_internal(ref Camera camera, ref Color? color, float duration) -> void:
+        func draw_camera_frustum_internal(camera: Camera, color: Color?, duration: float) -> void:
             if not DebugDraw.DebugEnabled:
                 return
             if camera == null:
                 return
 
             var f = camera.GetFrustum()
-            draw_camera_frustum_internal(ref f, ref color, duration)
+            draw_camera_frustum_internal(f, color, duration)
 
-        func draw_camera_frustum_internal(ref GDArray cameraFrustum, ref Color? color, float duration) -> void:
+        func draw_camera_frustum_internal(cameraFrustum: GDArray, color: Color?, duration: float) -> void:
             if not DebugDraw.DebugEnabled:
                 return
             if cameraFrustum.size() != 6:
@@ -1857,9 +1857,9 @@ namespace DebugDrawInternalFunctionality
             for i in range(cameraFrustum.size()):
                 f[i] = ((Plane)cameraFrustum[i])
 
-            draw_camera_frustum_internal(ref f, ref color, duration)
+            draw_camera_frustum_internal(f, color, duration)
 
-        func draw_camera_frustum_internal(ref Plane[] planes, ref Color? color, float duration) -> void:
+        func draw_camera_frustum_internal(planes: Array, color: Color?, duration: float) -> void:
             if not DebugDraw.DebugEnabled:
                 return
             if planes.size() != 6:
@@ -1879,7 +1879,7 @@ namespace DebugDrawInternalFunctionality
 
         #endregion # Camera frustum
 
-        func draw_position_3d_internal(ref Transform transform, ref Color? color, float duration) -> void:
+        func draw_position_3d_internal(transform: Transform, color: Color?, duration: float) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1894,34 +1894,34 @@ namespace DebugDrawInternalFunctionality
                 inst.bounds.radius = _get_max_value(s) * 0.5f
                 inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
-                _mmc.get_positions().Add(inst)
+                _mmc.get_positions().append(inst)
             }
             _data_mutex.unlock()
 
-        func draw_position_3d_internal(ref Vector3 position, ref Quat rotation, ref Vector3 scale, ref Color? color, float duration) -> void:
+        func draw_position_3d_internal(position: Vector3, rotation: Quat, scale: Vector3, color: Color?, duration: float) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
             var t = Transform.new(Basis.new(rotation), position)
             t.basis.scale = scale
 
-            draw_position_3d_internal(ref t, ref color, duration)
+            draw_position_3d_internal(t, color, duration)
 
-        func draw_position_3d_internal(ref Vector3 position, ref Color? color, float scale, float duration) -> void:
+        func draw_position_3d_internal(position: Vector3, color: Color?, scale: float, duration: float) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
             var t = Transform.new(Basis.IDENTITY, position)
             t.basis.scale = Vector3.ONE * scale
 
-            draw_position_3d_internal(ref t, ref color, duration)
+            draw_position_3d_internal(t, color, duration)
 
         #endregion # Misc
         #endregion # 3D
 
         #region 2D
 
-        func begin_text_group_internal(String group_title, int group_priority, ref Color? group_color, bool show_title) -> void:
+        func begin_text_group_internal(group_title: String, group_priority: int, group_color: Color?, show_title: bool) -> void:
             _data_mutex.lock()
             {
                 var new_group = _text_groups.FirstOrDefault(g => g.Title == group_title)
@@ -1948,7 +1948,7 @@ namespace DebugDrawInternalFunctionality
             }
             _data_mutex.unlock()
 
-        func set_text_internal(ref String key, ref object value, int priority, ref Color? color_of_value, float duration) -> void:
+        func set_text_internal(key: String, value: object, priority: int, color_of_value: Color?, duration: float) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1995,9 +1995,9 @@ namespace DebugDrawInternalFunctionality
             var p = dr.bounds.position
             var r = dr.bounds.radius
             Color? c = Color.darkorange
-            draw_sphere_internal(ref p, r, ref c, 0)
+            draw_sphere_internal(p, r, c, 0)
 
-        func _generate_arrowhead_instance(ref Vector3 a, ref Vector3 b, ref Color? color, ref float duration, ref float arrow_size, ref bool absolute_size) -> void:
+        func _generate_arrowhead_instance(a: Vector3, b: Vector3, color: Color?, duration: float, arrow_size: float, absolute_size: bool) -> void:
             _data_mutex.lock()
             {
                 var offset = (b - a)
@@ -2014,7 +2014,7 @@ namespace DebugDrawInternalFunctionality
                 inst.bounds.radius = CubeDiagonalLengthForSphere * length
                 inst.expiration_time = time
 
-                _mmc.get_arrowheads().Add(inst)
+                _mmc.get_arrowheads().append(inst)
             }
             _data_mutex.unlock()
 
