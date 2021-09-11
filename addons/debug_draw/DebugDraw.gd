@@ -198,11 +198,11 @@ extends Node
     ### <summary>
     ### Custom <see cref="CanvasItem"/> to draw on it. Set to <see langword="null"/> to disable.
     ### </summary>
-    public static CanvasItem CustomCanvas
+    public static CanvasItem custom_canvas
     {
 #if DEBUG
-        get => internal_instance?.CustomCanvas
-        set { if (internal_instance != null) internal_instance.CustomCanvas = value }
+        get => internal_instance?.custom_canvas
+        set { if (internal_instance != null) internal_instance.set_custom_canvas(value) }
 #else
         get set
 #endif
@@ -233,7 +233,7 @@ extends Node
         else:
             push_error("Only 1 instance of DebugDraw is allowed")
 
-        Name = "DebugDraw"
+        name = "DebugDraw"
         internal_instance = DebugDrawInternalFunctionality.DebugDrawImplementation.new(self)
     }
 
@@ -315,7 +315,7 @@ extends Node
     ### <param name="duration">Duration of existence in seconds</param>
     static func draw_sphere(position: Vector3, radius: float, color: Color? = null, duration: float = 0f) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_sphere_internal(ref position, radius, ref color, duration)
+            internal_instance.draw_sphere_internal(position, radius, color, duration)
 
     ### <summary>
     ### Draw sphere
@@ -325,7 +325,7 @@ extends Node
     ### <param name="duration">Duration of existence in seconds</param>
     static func draw_sphere(transform: Transform, color: Color? = null, duration: float = 0f) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_sphere_internal(ref transform, ref color, duration)
+            internal_instance.draw_sphere_internal(transform, color, duration)
 
     #endregion # Spheres
 
@@ -341,7 +341,7 @@ extends Node
     ### <param name="duration">Duration of existence in seconds</param>
     static func draw_cylinder(position: Vector3, radius: float, height: float, color: Color? = null, duration: float = 0f) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_cylinder_internal(ref position, radius, height, ref color, duration)
+            internal_instance.draw_cylinder_internal(position, radius, height, color, duration)
 
     ### <summary>
     ### Draw vertical cylinder
@@ -351,7 +351,7 @@ extends Node
     ### <param name="duration">Duration of existence in seconds</param>
     static func draw_cylinder(transform: Transform, color: Color? = null, duration: float = 0f) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_cylinder_internal(ref transform, ref color, duration)
+            internal_instance.draw_cylinder_internal(transform, color, duration)
 
     #endregion # Cylinders
 
@@ -367,7 +367,7 @@ extends Node
     ### <param name="isBoxCentered">Use <paramref name="position"/> as center of the box</param>
     static func draw_box(position: Vector3, size: Vector3, color: Color? = null, duration: float = 0f, isBoxCentered: bool = true) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_box_internal(ref position, ref size, ref color, duration, isBoxCentered)
+            internal_instance.draw_box_internal(position, size, color, duration, isBoxCentered)
 
     ### <summary>
     ### Draw rotated box
@@ -380,7 +380,7 @@ extends Node
     ### <param name="isBoxCentered">Use <paramref name="position"/> as center of the box</param>
     static func draw_box(position: Vector3, rotation: Quat, size: Vector3, color: Color? = null, duration: float = 0f, isBoxCentered: bool = true) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_box_internal(ref position, ref rotation, ref size, ref color, duration, isBoxCentered)
+            internal_instance.draw_box_internal(position, rotation, size, color, duration, isBoxCentered)
 
     ### <summary>
     ### Draw rotated box
@@ -391,7 +391,7 @@ extends Node
     ### <param name="isBoxCentered">Use <paramref name="position"/> as center of the box</param>
     static func draw_box(transform: Transform, color: Color? = null, duration: float = 0f, isBoxCentered: bool = true) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_box_internal(ref transform, ref color, duration, isBoxCentered)
+            internal_instance.draw_box_internal(transform, color, duration, isBoxCentered)
 
     ### <summary>
     ### Draw AABB from <paramref name="a"/> to <paramref name="b"/>
@@ -402,7 +402,7 @@ extends Node
     ### <param name="duration">Duration of existence in seconds</param>
     static func draw_aabb(a: Vector3, b: Vector3, color: Color? = null, duration: float = 0f) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_aabb_internal(ref a, ref b, ref color, duration)
+            internal_instance.draw_aabb_internal(a, b, color, duration)
 
     ### <summary>
     ### Draw AABB
@@ -412,7 +412,7 @@ extends Node
     ### <param name="duration">Duration of existence in seconds</param>
     static func draw_aabb(aabb: AABB, color: Color? = null, duration: float = 0f) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_aabb_internal(ref aabb, ref color, duration)
+            internal_instance.draw_aabb_internal(aabb, color, duration)
 
     #endregion # Boxes
 
@@ -430,7 +430,7 @@ extends Node
     ### <param name="afterHitColor">Color of line after hit position</param>
     static func draw_line_3d_hit(a: Vector3, b: Vector3, is_hit: bool, unit_offset_of_hit: float = 0.5f, hit_size: float = 0.25f, duration: float = 0f, hit_color: Color? = null, after_hit_color: Color? = null) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_line_3d_hit_internal(ref a, ref b, is_hit, unit_offset_of_hit, hit_size, duration, ref hit_color, ref after_hit_color)
+            internal_instance.draw_line_3d_hit_internal(a, b, is_hit, unit_offset_of_hit, hit_size, duration, hit_color, after_hit_color)
 
     #region Normal
 
@@ -443,7 +443,7 @@ extends Node
     ### <param name="duration">Duration of existence in seconds</param>
     static func draw_line_3d(a: Vector3, b: Vector3, color: Color? = null, duration: float = 0f) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_line_3d_internal(ref a, ref b, ref color, duration)
+            internal_instance.draw_line_3d_internal(a, b, color, duration)
 
     ### <summary>
     ### Draw ray
@@ -463,7 +463,7 @@ extends Node
     ### <param name="path">Sequence of points</param>
     ### <param name="color">Color</param>
     ### <param name="duration">Duration of existence in seconds</param>
-    static func draw_line_path_3d(path: IList<Vector3>, color: Color? = null, duration: float = 0f) -> void:
+    static func draw_line_path_3d(path: Array, color: Color? = null, duration: float = 0f) -> void:
         if OS.is_debug_build() and internal_instance != null:
             internal_instance.draw_line_path_3d_internal(path, color, duration)
 
@@ -516,9 +516,9 @@ extends Node
     ### <param name="duration">Duration of existence in seconds</param>
     ### <param name="arrowSize">Size of the arrow</param>
     ### <param name="absoluteSize">Is the <paramref name="arrowSize"/> absolute or relative to the length of the line?</param>
-    static func draw_arrow_path_3d(path: IList<Vector3>, color: Color? = null, duration: float = 0f, arrow_size: float = 0.75f, absolute_size: bool = true) -> void:
+    static func draw_arrow_path_3d(path: Array, color: Color? = null, duration: float = 0f, arrow_size: float = 0.75f, absolute_size: bool = true) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_arrow_path_3d_internal(path, ref color, duration, arrow_size, absolute_size)
+            internal_instance.draw_arrow_path_3d_internal(path, color, duration, arrow_size, absolute_size)
 
     ### <summary>
     ### Draw a sequence of points connected by lines with arrows
@@ -530,7 +530,7 @@ extends Node
     ### <param name="absoluteSize">Is the <paramref name="arrowSize"/> absolute or relative to the length of the line?</param>
     static func draw_arrow_path_3d(Color? color = null, float duration = 0f, float arrow_size = 0.75f, bool absolute_size = true, params Vector3[] path) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_arrow_path_3d_internal(ref color, duration, arrow_size, absolute_size, path)
+            internal_instance.draw_arrow_path_3d_internal(color, duration, arrow_size, absolute_size, path)
 
     #endregion # Arrows
     #endregion # Lines
@@ -546,7 +546,7 @@ extends Node
     ### <param name="duration">Duration of existence in seconds</param>
     static func draw_billboard_square(position: Vector3, size: float = 0.2f, color: Color? = null, duration: float = 0f) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_billboard_square_internal(ref position, size, ref color, duration)
+            internal_instance.draw_billboard_square_internal(position, size, color, duration)
 
     #region Camera Frustum
 
@@ -558,7 +558,7 @@ extends Node
     ### <param name="duration">Duration of existence in seconds</param>
     static func draw_camera_frustum(camera: Camera, color: Color? = null, duration: float = 0f) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_camera_frustum_internal(ref camera, ref color, duration)
+            internal_instance.draw_camera_frustum_internal(camera, color, duration)
 
     ### <summary>
     ### Draw camera frustum area
@@ -568,7 +568,7 @@ extends Node
     ### <param name="duration">Duration of existence in seconds</param>
     static func draw_camera_frustum(camera_frustum: GDArray, color: Color? = null, duration: float = 0f) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_camera_frustum_internal(ref camera_frustum, ref color, duration)
+            internal_instance.draw_camera_frustum_internal(camera_frustum, color, duration)
 
     ### <summary>
     ### Draw camera frustum area
@@ -578,7 +578,7 @@ extends Node
     ### <param name="duration">Duration of existence in seconds</param>
     static func draw_camera_frustum(planes: Plane[], color: Color? = null, duration: float = 0f) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_camera_frustum_internal(ref planes, ref color, duration)
+            internal_instance.draw_camera_frustum_internal(planes, color, duration)
 
     #endregion # Camera Frustum
 
@@ -590,7 +590,7 @@ extends Node
     ### <param name="duration">Duration of existence in seconds</param>
     static func draw_position_3d(transform: Transform, color: Color? = null, duration: float = 0f) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_position_3d_internal(ref transform, ref color, duration)
+            internal_instance.draw_position_3d_internal(transform, color, duration)
 
     ### <summary>
     ### Draw 3 intersecting lines with the given transformations
@@ -602,7 +602,7 @@ extends Node
     ### <param name="duration">Duration of existence in seconds</param>
     static func draw_position_3d(position: Vector3, rotation: Quat, scale: Vector3, color: Color? = null, duration: float = 0f) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_position_3d_internal(ref position, ref rotation, ref scale, ref color, duration)
+            internal_instance.draw_position_3d_internal(position, rotation, scale, color, duration)
 
     ### <summary>
     ### Draw 3 intersecting lines with the given transformations
@@ -613,7 +613,7 @@ extends Node
     ### <param name="duration">Duration of existence in seconds</param>
     static func draw_position_3d(position: Vector3, color: Color? = null, scale: float = 0.25f, duration: float = 0f) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.draw_position_3d_internal(ref position, ref color, scale, duration)
+            internal_instance.draw_position_3d_internal(position, color, scale, duration)
 
     #endregion # Misc
     #endregion # 3D
@@ -628,7 +628,7 @@ extends Node
     ### <param name="showTitle">Whether to show the title</param>
     static func begin_text_group(group_title: String, group_priority: int = 0, group_color: Color? = null, show_title: bool = true) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.begin_text_group_internal(group_title, group_priority, ref group_color, show_title)
+            internal_instance.begin_text_group_internal(group_title, group_priority, group_color, show_title)
 
     ### <summary>
     ### End text group. Should be called after <see cref="begin_text_group(String, int, bool)"/> if you don't need more than one group.
@@ -651,7 +651,7 @@ extends Node
     ### <param name="duration">Expiration time</param>
     static func set_text(String key, object value = null, int priority = 0, Color? color_of_value = null, float duration = -1f) -> void:
         if OS.is_debug_build() and internal_instance != null:
-            internal_instance.set_text_internal(ref key, ref value, priority, ref color_of_value, duration)
+            internal_instance.set_text_internal(key, value, priority, color_of_value, duration)
 
     #endregion # 2D
 
@@ -685,7 +685,7 @@ namespace DebugDrawInternalFunctionality
 
         func clean_texts(update: Action) -> void:
             # TODO
-            var keysToRemove = Texts
+            var keysToRemove = texts
                 .Where(p => p.Value.is_expired())
                 .Select(p => p.Key).ToArray()
 
@@ -734,10 +734,10 @@ namespace DebugDrawInternalFunctionality
         var bounds: SphereBounds = SphereBounds.new()
 
     class DelayedRendererLine extends DelayedRenderer:
-        var bounds: AABB { get set }
+        var bounds: AABB
         var lines_color: Color
-        var Vector3[] _lines = Array.Empty<Vector3>()
 
+        var _lines := []
         func virtual Vector3[] Lines
         {
             get => _lines
@@ -783,7 +783,11 @@ namespace DebugDrawInternalFunctionality
                 filled = clamp(filled + 1, 0, frame_times.size())
 
         func draw(ci: CanvasItem, font: Font, viewport_size: Vector2) -> void:
-            var not_zero = frame_times.Where((f) => f > 0f).Select((f) => DebugDraw.FPSGraphFrameTimeMode ? f * 1000 : 1f / f).ToArray()
+            var not_zero := []
+            for f in frame_times:
+                if f > 0:
+                    var val := f * 1000 if DebugDraw.FPSGraphFrameTimeMode else 1.0 / f
+                    not_zero.append(val)
 
             # No elements. Leave
             if not_zero.size() == 0:
@@ -800,8 +804,7 @@ namespace DebugDrawInternalFunctionality
             var pos = graph_offset
 
             match DebugDraw.FPSGraphPosition:
-                DebugDraw.BlockPosition.LEFT_TOP: [[fallthrough]]  # TODO
-                DebugDraw.BlockPosition.RIGHT_TOP:
+                DebugDraw.BlockPosition.LEFT_TOP, DebugDraw.BlockPosition.RIGHT_TOP:
                     pos = Vector2(viewport_size.x - graph_size.x - graph_offset.x, graph_offset.y)
                 DebugDraw.BlockPosition.LEFT_BOTTOM:
                     pos = Vector2(graph_offset.x, viewport_size.y - graph_size.y - graph_offset.y)
@@ -858,8 +861,7 @@ namespace DebugDrawInternalFunctionality
                 ci.draw_string(font, pos + Vector2(graph_size.x - cur_size.x, graph_size.y * 0.5f + cur_size.y * 0.5f - 2), cur_text, DebugDraw.FPSGraphTextColor)
     }
 
-    class MultiMeshContainer
-    {
+    class MultiMeshContainer:
         const Action<int> _add_rendered_objects = null
 
         const MultiMeshInstance _mmi_cubes = null
@@ -870,37 +872,40 @@ namespace DebugDrawInternalFunctionality
         const MultiMeshInstance _mmi_spheres = null
         const MultiMeshInstance _mmi_cylinders = null
 
-        const all_mmi_with_values: Dictionary = {  # TODO these keys are currently null
-            _mmi_cubes: [],
-            _mmi_cubes_centered: [],
-            _mmi_arrowheads: [],
-            _mmi_billboard_squares: [],
-            _mmi_positions: [],
-            _mmi_spheres: [],
-            _mmi_cylinders: [],
-        }
+        const all_mmi_with_values: Dictionary = {}  # MultiMeshInstance -> DelayedRenderer
 
-        # TODO could do properties, but I would have to write getter fns either way
-        # TODO uniqueness doesn't matter for these
-        const Cubes = all_mmi_with_values[_mmi_cubes]
-        const CubesCentered = all_mmi_with_values[_mmi_cubes_centered]
-        const Arrowheads = all_mmi_with_values[_mmi_arrowheads]
-        const BillboardSquares = all_mmi_with_values[_mmi_billboard_squares]
-        const Positions = all_mmi_with_values[_mmi_positions]
-        const Spheres = all_mmi_with_values[_mmi_spheres]
-        const Cylinders = all_mmi_with_values[_mmi_cylinders]
+        func get_cubes() -> Array:
+            return all_mmi_with_values[_mmi_cubes]
+
+        func get_centered_cubes() -> Array:
+            return all_mmi_with_values[_mmi_cubes_centered]
+
+        func get_arrowheads() -> Array:
+            return all_mmi_with_values[_mmi_arrowheads]
+
+        func get_billboard_squares() -> Array:
+            return all_mmi_with_values[_mmi_billboard_squares]
+
+        func get_positions() -> Array:
+            return all_mmi_with_values[_mmi_positions]
+
+        func get_spheres() -> Array:
+            return all_mmi_with_values[_mmi_spheres]
+
+        func get_cylinders() -> Array:
+            return all_mmi_with_values[_mmi_cylinders]
 
         func _init(root: Node, on_object_rendered: Action<int>):
             _add_rendered_objects = on_object_rendered
 
             # Create node with material and MultiMesh. Add to tree. Create array of instances
-            _mmi_cubes = _create_mmi(root, nameof(_mmi_cubes))
-            _mmi_cubes_centered = _create_mmi(root, nameof(_mmi_cubes_centered))
-            _mmi_arrowheads = _create_mmi(root, nameof(_mmi_arrowheads))
-            _mmi_billboard_squares = _create_mmi(root, nameof(_mmi_billboard_squares))
-            _mmi_positions = _create_mmi(root, nameof(_mmi_positions))
-            _mmi_spheres = _create_mmi(root, nameof(_mmi_spheres))
-            _mmi_cylinders = _create_mmi(root, nameof(_mmi_cylinders))
+            _mmi_cubes = _create_mmi(root, "_mmi_cubes")
+            _mmi_cubes_centered = _create_mmi(root, "_mmi_cubes_centered")
+            _mmi_arrowheads = _create_mmi(root, "_mmi_arrowheads")
+            _mmi_billboard_squares = _create_mmi(root, "_mmi_billboard_squares")
+            _mmi_positions = _create_mmi(root, "_mmi_positions")
+            _mmi_spheres = _create_mmi(root, "_mmi_spheres")
+            _mmi_cylinders = _create_mmi(root, "_mmi_cylinders")
 
             # Customize parameters
             (_mmi_billboard_squares.material_override as SpatialMaterial).params_billboard_mode = SpatialMaterial.BillboardMode.BILLBOARD_ENABLED
@@ -931,7 +936,7 @@ namespace DebugDrawInternalFunctionality
             mmi.multimesh.transform_format = MultiMesh.TransformFormat.TRANSFORM_3D
 
             root.add_child(mmi)
-            all_mmi_with_values.Add(mmi, new HashSet<DelayedRendererInstance>())
+            all_mmi_with_values[mmi] = []
             return mmi
 
         func _create_mesh(type: Mesh.PrimitiveType, vertices: Vector3[], indices: int[] = null, colors: Color[] = null) -> ArrayMesh:
@@ -953,42 +958,49 @@ namespace DebugDrawInternalFunctionality
         func deinit() -> void:
             all_mmi_with_values.clear()
 
-            for p in all_mmi_with_values:
-                p.Key?.queue_free()
+            for mmi in all_mmi_with_values:
+                mmi.queue_free()
 
         func clear_instances() -> void:
-            for item in all_mmi_with_values:
-                item.Value.clear()
+            for renderer in all_mmi_with_values:
+                renderer.clear()
 
         func remove_expired(return_func: Action<DelayedRendererInstance>) -> void:
-            for item in all_mmi_with_values:
-                item.Value.RemoveWhere((o) =>
-                {
-                    if o == null or o.is_expired():
-                        return_func(o)
-                        return true
-                    return false
-                })
+            var to_remove := []
+            for mmi in all_mmi_with_values:
+                var renderer = all_mmi_with_values[mmi]
+                if renderer == null or renderer.is_expired():
+                    to_remove.append(mmi)
+
+            for mmi in to_remove:
+                var renderer = all_mmi_with_values[mmi]
+                return_func(renderer)
+                all_mmi_with_values.erase(mmi)
 
         func update_visibility(frustum: Plane[]) -> void:
-            Parallel.ForEach(all_mmi_with_values, (item) => _update_visibility_internal(item.Value, frustum))
+            for renderer in all_mmi_with_values.values():
+                _update_visibility_internal(renderer, frustum)
 
         func update_instances() -> void:
-            for item in all_mmi_with_values:
-                _update_instances_internal(item.Key, item.Value)
+            for mmi in all_mmi_with_values:
+                _update_instances_internal(mmi, all_mmi_with_values[mmi])
 
         func hide_all() -> void:
-            for item in all_mmi_with_values:
-                item.key.multimesh.visible_instance_count = 0
+            for mmi in all_mmi_with_values:
+                mmi.multimesh.visible_instance_count = 0
 
-        func _update_instances_internal(mmi: MultiMeshInstance, instances: HashSet<DelayedRendererInstance>) -> void:
+        func _update_instances_internal(mmi: MultiMeshInstance, instances: Array) -> void:
             if instances.size() > 0:
                 if mmi.multimesh.instance_count < instances.size():
                     mmi.multimesh.instance_count = instances.size()
-                mmi.multimesh.visible_instance_count = instances.Sum((inst) => inst.is_visible ? 1 : 0)
+                var visible_count := 0
+                for inst in instances:
+                    if inst.is_visible:
+                        visible_count += 1
+                mmi.multimesh.visible_instance_count = visible_count
                 _add_rendered_objects?.Invoke(mmi.multimesh.visible_instance_count)
 
-                int i = 0
+                var i := 0
                 for d in instances:
                     d.is_used_one_time = true
                     if d.is_visible:
@@ -1001,7 +1013,6 @@ namespace DebugDrawInternalFunctionality
         func _update_visibility_internal(instances: HashSet<DelayedRendererInstance>, frustum: Plane[]) -> void:
             for _mesh in instances:
                 _mesh.is_visible = DebugDrawImplementation.bounds_partially_inside_convex_shape(_mesh.bounds, frustum)
-    }
 
     # https://docs.microsoft.com/en-gb/dotnet/standard/collections/thread-safe/how-to-create-an-object-pool
     # class ObjectPool<T> where T : class, IPoolable, new()
@@ -1189,28 +1200,22 @@ namespace DebugDrawInternalFunctionality
         const DebugDraw debug_draw = null
         var _is_ready: bool = false
 
-        var _customCanvas: CanvasItem = null
-        public CanvasItem CustomCanvas
-        {
-            get => _customCanvas
-            set
-            {
-                var connected_internal = CanvasItemInternal.is_connected("draw", debug_draw, "on_canvas_item_draw")
-                var connected_custom = _customCanvas != null and _customCanvas.is_connected("draw", debug_draw, "on_canvas_item_draw")
+        var custom_canvas: CanvasItem = null
+        func set_custom_canvas(new_canvas: CanvasItem):
+            var connected_internal = CanvasItemInternal.is_connected("draw", debug_draw, "on_canvas_item_draw")
+            var connected_custom = custom_canvas != null and custom_canvas.is_connected("draw", debug_draw, "on_canvas_item_draw")
 
-                if value == null:
-                    if not connected_internal:
-                        CanvasItemInternal.connect("draw", debug_draw, "on_canvas_item_draw", new GDArray { CanvasItemInternal })
-                    if connected_custom:
-                        _customCanvas?.disconnect("draw", debug_draw, "on_canvas_item_draw")
-                else:
-                    if connected_internal:
-                        CanvasItemInternal.disconnect("draw", debug_draw, "on_canvas_item_draw")
-                    if not connected_custom:
-                        value.connect("draw", debug_draw, "on_canvas_item_draw", new GDArray { value })
-                _customCanvas = value
-            }
-        }
+            if new_canvas == null:
+                if not connected_internal:
+                    CanvasItemInternal.connect("draw", debug_draw, "on_canvas_item_draw", new GDArray { CanvasItemInternal })
+                if connected_custom:
+                    custom_canvas?.disconnect("draw", debug_draw, "on_canvas_item_draw")
+            else:
+                if connected_internal:
+                    CanvasItemInternal.disconnect("draw", debug_draw, "on_canvas_item_draw")
+                if not connected_custom:
+                    new_canvas.connect("draw", debug_draw, "on_canvas_item_draw", new GDArray { new_canvas })
+            custom_canvas = new_canvas
 
         func _init(dd: DebugDraw) -> void:  # TODO should init return void?
             debug_draw = dd
@@ -1236,7 +1241,7 @@ namespace DebugDrawInternalFunctionality
 
             # Create wireframe mesh drawer
             _immediate_geometry = ImmediateGeometry.new()
-            _immediate_geometry.name = nameof(_immediate_geometry)
+            _immediate_geometry.name = "_immediate_geometry"
             _immediate_geometry.cast_shadow = GeometryInstance.ShadowCastingSetting.SHADOW_CASTING_SETTING_OFF
             _immediate_geometry.use_in_baked_light = false
 
@@ -1252,7 +1257,7 @@ namespace DebugDrawInternalFunctionality
             _canvas_layer = CanvasLayer.new() { Layer = 64 }
             CanvasItemInternal = Node2D.new()
 
-            if CustomCanvas == null:
+            if custom_canvas == null:
                 CanvasItemInternal.connect("draw", debug_draw, "on_canvas_item_draw", new GDArray { CanvasItemInternal })
 
             debug_draw.add_child(_canvas_layer)
@@ -1280,8 +1285,8 @@ namespace DebugDrawInternalFunctionality
 
             if CanvasItemInternal != null and CanvasItemInternal.is_connected("draw", debug_draw, "on_canvas_item_draw"):
                 CanvasItemInternal.disconnect("draw", debug_draw, "on_canvas_item_draw")
-            if _customCanvas != null and _customCanvas.is_connected("draw", debug_draw, "on_canvas_item_draw"):
-                _customCanvas.disconnect("draw", debug_draw, "on_canvas_item_draw")
+            if custom_canvas != null and custom_canvas.is_connected("draw", debug_draw, "on_canvas_item_draw"):
+                custom_canvas.disconnect("draw", debug_draw, "on_canvas_item_draw")
 
             if CanvasItemInternal != null:
                 CanvasItemInternal.queue_free()
@@ -1296,14 +1301,14 @@ namespace DebugDrawInternalFunctionality
             _immediate_geometry = null
 
             # Clear editor canvas
-            if CustomCanvas != null:
-                CustomCanvas.update()
+            if custom_canvas != null:
+                custom_canvas.update()
 
         func update(delta: float) -> void:
             _data_mutex.lock()
             {
                 # Clean texts
-                _text_groups.RemoveWhere((g) => g.Texts.size() == 0)
+                _text_groups.RemoveWhere((g) => g.texts.size() == 0)
                 foreach (var g in _text_groups) g.CleanTexts(() => _update_canvas())
 
                 # Clean lines
@@ -1325,10 +1330,10 @@ namespace DebugDrawInternalFunctionality
 
             # Update overlay
             if _canvas_needs_update or DebugDraw.FPSGraphEnabled:
-                if CustomCanvas == null:
+                if custom_canvas == null:
                     CanvasItemInternal.update()
                 else:
-                    CustomCanvas.update()
+                    custom_canvas.update()
 
                 # reset some values
                 _canvas_needs_update = false
@@ -1394,13 +1399,13 @@ namespace DebugDrawInternalFunctionality
 
                 {   # Debug bounds
                     #_immediate_geometry.Begin(Mesh.PrimitiveType.PRIMITIVE_LINES) foreach (var l in _wire_meshes) ___draw_debug_bounds_for_debug_line_primitives(l) _immediate_geometry.End()
-                    #foreach (var l in _mmc.Cubes.ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
-                    #foreach (var l in _mmc.CubesCentered.ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
-                    #foreach (var l in _mmc.BillboardSquares.ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
-                    #foreach (var l in _mmc.Arrowheads.ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
-                    #foreach (var l in _mmc.Positions.ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
-                    #foreach (var l in _mmc.Spheres.ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
-                    #foreach (var l in _mmc.Cylinders.ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
+                    #foreach (var l in _mmc.get_cubes().ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
+                    #foreach (var l in _mmc.get_centered_cubes().ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
+                    #foreach (var l in _mmc.get_billboard_squares().ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
+                    #foreach (var l in _mmc.get_arrowheads().ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
+                    #foreach (var l in _mmc.get_positions().ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
+                    #foreach (var l in _mmc.get_spheres().ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
+                    #foreach (var l in _mmc.get_cylinders().ToArray()) _draw_debug_bounds_for_debug_instance_primitives(l)
                 }
 
                 # Update MultiMeshInstances
@@ -1417,7 +1422,9 @@ namespace DebugDrawInternalFunctionality
 
             _data_mutex.lock()
             { # Text drawing
-                var count = _text_groups.Sum((g) => g.Texts.size() + (g.ShowTitle ? 1 : 0))
+                var count := 0
+                for g in _text_groups:
+                    count += g.texts.size() + (g.show_title ? 1 : 0)
 
                 const String separator = " : "
 
@@ -1455,9 +1462,9 @@ namespace DebugDrawInternalFunctionality
 
                 foreach (var g in _text_groups.OrderBy(g => g.group_priority))
                 {
-                    var a = g.Texts.OrderBy(t => t.Value.Priority).ThenBy(t => t.Key)
+                    var a = g.texts.OrderBy(t => t.Value.Priority).ThenBy(t => t.Key)
 
-                    foreach (var t in g.ShowTitle ? a.Prepend(new KeyValuePair<String, DelayedText>(g.Title ?? "", null)) : a)
+                    foreach (var t in g.show_title ? a.Prepend(new KeyValuePair<String, DelayedText>(g.Title ?? "", null)) : a)
                     {
                         var keyText = t.Key if t.Key else ""
                         var text = t.Value?.Text == null ? keyText : $"{keyText}{separator}{t.Value.Text}"
@@ -1542,7 +1549,7 @@ namespace DebugDrawInternalFunctionality
                 inst.bounds.radius = transform.basis.scale.length() * 0.5f
                 inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
-                _mmc.Spheres.Add(inst)
+                _mmc.get_spheres().Add(inst)
             }
             _data_mutex.unlock()
 
@@ -1573,7 +1580,7 @@ namespace DebugDrawInternalFunctionality
                 inst.bounds.radius = transform.basis.scale.length() * 0.5f
                 inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
-                _mmc.Cylinders.Add(inst)
+                _mmc.get_cylinders().Add(inst)
             }
             _data_mutex.unlock()
 
@@ -1610,9 +1617,9 @@ namespace DebugDrawInternalFunctionality
                     inst.bounds.position = t.origin + size * 0.5f
 
                 if is_box_centered:
-                    _mmc.CubesCentered.Add(inst)
+                    _mmc.get_centered_cubes().Add(inst)
                 else:
-                    _mmc.Cubes.Add(inst)
+                    _mmc.get_cubes().Add(inst)
             }
             _data_mutex.unlock()
 
@@ -1636,23 +1643,23 @@ namespace DebugDrawInternalFunctionality
                     inst.bounds.position = transform.origin + transform.basis.scale * 0.5f
 
                 if is_box_centered:
-                    _mmc.CubesCentered.Add(inst)
+                    _mmc.get_centered_cubes().Add(inst)
                 else:
-                    _mmc.Cubes.Add(inst)
+                    _mmc.get_cubes().Add(inst)
             }
             _data_mutex.unlock()
 
         func draw_aabb_internal(ref AABB box, ref Color? color, float duration) -> void:
             if not DebugDraw.DebugEnabled:
                 return
-            get_diagonal_vectors(box.position, box.End, out Vector3 bottom, out _, out Vector3 diag)
-            draw_box_internal(ref bottom, ref diag, ref color, duration, false)
+            var vectors = get_diagonal_vectors(box.position, box.End)
+            draw_box_internal(vectors.bottom, vectors.diag, color, duration, false)
 
         func draw_aabb_internal(ref Vector3 a, ref Vector3 b, ref Color? color, float duration) -> void:
             if not DebugDraw.DebugEnabled:
                 return
-            get_diagonal_vectors(a, b, out Vector3 bottom, out _, out Vector3 diag)
-            draw_box_internal(ref bottom, ref diag, ref color, duration, false)
+            var vectors = get_diagonal_vectors(a, b)
+            draw_box_internal(vectors.bottom, vectors.diag, color, duration, false)
 
         #endregion # Boxes
 
@@ -1694,7 +1701,7 @@ namespace DebugDrawInternalFunctionality
                     inst.bounds.radius = CubeDiagonalLengthForSphere * hit_size
                     inst.expiration_time = time
 
-                    _mmc.BillboardSquares.Add(inst)
+                    _mmc.get_billboard_squares().Add(inst)
                 else:
                     var line = _pool_wired_renderers.Get()
 
@@ -1708,7 +1715,7 @@ namespace DebugDrawInternalFunctionality
 
         #region Normal
 
-        func draw_line_3d_internal(ref Vector3 a, ref Vector3 b, ref Color? color, float duration) -> void:
+        func draw_line_3d_internal(a: Vector3, b: Vector3, color: Color?, duration: float) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1716,7 +1723,7 @@ namespace DebugDrawInternalFunctionality
             {
                 var line = _pool_wired_renderers.Get()
 
-                line.Lines = Vector3[] { a, b }
+                line.Lines = [a, b]
                 line.lines_color = color if color else Color.lightgreen
                 line.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
@@ -1731,7 +1738,7 @@ namespace DebugDrawInternalFunctionality
             var end = origin + direction * length
             draw_line_3d_internal(ref origin, ref end, ref color, duration)
 
-        func draw_line_path_3d_internal(path: IList<Vector3>, color: Color?, duration: float = 0f) -> void:
+        func draw_line_path_3d_internal(path: Array, color: Color?, duration: float = 0f) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1780,7 +1787,7 @@ namespace DebugDrawInternalFunctionality
 
             draw_arrow_line_3d_internal(origin, origin + direction * length, color, duration, arrow_size, absolute_size)
 
-        func draw_arrow_path_3d_internal(IList<Vector3> path, ref Color? color, float duration, float arrow_size, bool absolute_size) -> void:
+        func draw_arrow_path_3d_internal(Array path, ref Color? color, float duration, float arrow_size, bool absolute_size) -> void:
             if not DebugDraw.DebugEnabled:
                 return
 
@@ -1825,7 +1832,7 @@ namespace DebugDrawInternalFunctionality
                 inst.bounds.radius = CubeDiagonalLengthForSphere * size
                 inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
-                _mmc.BillboardSquares.Add(inst)
+                _mmc.get_billboard_squares().Add(inst)
             }
             _data_mutex.unlock()
 
@@ -1884,10 +1891,10 @@ namespace DebugDrawInternalFunctionality
                 inst.instance_transform = transform
                 inst.instance_color = color if color else Color.crimson
                 inst.bounds.position = transform.origin
-                inst.bounds.radius = _get_max_value(ref s) * 0.5f
+                inst.bounds.radius = _get_max_value(s) * 0.5f
                 inst.expiration_time = DateTime.Now + TimeSpan.FromSeconds(duration)
 
-                _mmc.Positions.Add(inst)
+                _mmc.get_positions().Add(inst)
             }
             _data_mutex.unlock()
 
@@ -1919,7 +1926,7 @@ namespace DebugDrawInternalFunctionality
             {
                 var new_group = _text_groups.FirstOrDefault(g => g.Title == group_title)
                 if new_group != null:
-                    new_group.ShowTitle = show_title
+                    new_group.show_title = show_title
                     new_group.group_priority = group_priority
                     new_group.group_color = group_color if group_color else DebugDraw.TextForegroundColor
                 else:
@@ -1950,8 +1957,8 @@ namespace DebugDrawInternalFunctionality
 
             _data_mutex.lock()
             {
-                if _current_text_group.Texts.ContainsKey(key):
-                    var t = _current_text_group.Texts[key]
+                if _current_text_group.texts.ContainsKey(key):
+                    var t = _current_text_group.texts[key]
                     if str_val != t.Text:
                         _update_canvas()
                     t.Text = str_val
@@ -1959,7 +1966,7 @@ namespace DebugDrawInternalFunctionality
                     t.expiration_time = new_time
                     t.value_color = color_of_value
                 else:
-                    _current_text_group.Texts[key] = DelayedText.new(new_time, str_val, priority, color_of_value)
+                    _current_text_group.texts[key] = DelayedText.new(new_time, str_val, priority, color_of_value)
                     _update_canvas()
             }
             _data_mutex.unlock()
@@ -2007,7 +2014,7 @@ namespace DebugDrawInternalFunctionality
                 inst.bounds.radius = CubeDiagonalLengthForSphere * length
                 inst.expiration_time = time
 
-                _mmc.Arrowheads.Add(inst)
+                _mmc.get_arrowheads().Add(inst)
             }
             _data_mutex.unlock()
 
@@ -2158,7 +2165,7 @@ namespace DebugDrawInternalFunctionality
 
             return points.ToArray()
 
-        static func create_lines_from_path(path: IList<Vector3>) -> Vector3[]:
+        static func create_lines_from_path(path: Array) -> Vector3[]:
             var res = Vector3[(path.size() - 1) * 2]
 
             for (int i = 1 i < path.size() - 1 i++):
@@ -2168,56 +2175,55 @@ namespace DebugDrawInternalFunctionality
 
         #endregion # Geometry Generation
 
-        static func get_diagonal_vectors(Vector3 a, Vector3 b, out Vector3 bottom, out Vector3 top, out Vector3 diag) -> void:
-            bottom = Vector3.ZERO
-            top = Vector3.ZERO
+        class _DiagVectors:
+            var bottom := Vector3.ZERO
+            var top := Vector3.ZERO
+            var diag := Vector3.ZERO
 
+        static func get_diagonal_vectors(Vector3 a, Vector3 b) -> _DiagVectors:
+            var result = _DiagVectors()
             if a.x > b.x:
-                top.x = a.x
-                bottom.x = b.x
+                result.top.x = a.x
+                result.bottom.x = b.x
             else:
-                top.x = b.x
-                bottom.x = a.x
+                result.top.x = b.x
+                result.bottom.x = a.x
 
             if a.y > b.y:
-                top.y = a.y
-                bottom.y = b.y
+                result.top.y = a.y
+                result.bottom.y = b.y
             else:
-                top.y = b.y
-                bottom.y = a.y
+                result.top.y = b.y
+                result.bottom.y = a.y
 
             if a.z > b.z:
-                top.z = a.z
-                bottom.z = b.z
+                result.top.z = a.z
+                result.bottom.z = b.z
             else:
-                top.z = b.z
-                bottom.z = a.z
+                result.top.z = b.z
+                result.bottom.z = a.z
 
-            diag = top - bottom
+            result.diag = result.top - result.bottom
+            return result
 
-        static func bounds_partially_inside_convex_shape(bounds: AABB, planes: IList<Plane>) -> bool:
+        static func bounds_partially_inside_convex_shape(bounds: AABB, planes: Array) -> bool:
             var extent = bounds.size * 0.5f
             var center = bounds.position + extent
             for p in planes:
-                #if ((center - extent * p.Normal.Sign()).Dot(p.Normal) > p.D) #little slower i think
-                if (Vector3(
-                        center.x - extent.x * Math.Sign(p.Normal.x),
-                        center.y - extent.y * Math.Sign(p.Normal.y),
-                        center.z - extent.z * Math.Sign(p.Normal.z)
-                        ).Dot(p.Normal) > p.D)
+                if ((center - extent * p.normal.sign()).dot(p.normal) > p.d):
                     return false
 
             return true
 
-        static func bounds_partially_inside_convex_shape(sphere: SphereBounds, planes: IList<Plane>) -> bool:
+        static func bounds_partially_inside_convex_shape(sphere: SphereBounds, planes: Array) -> bool:
             for p in planes:
                 if p.distance_to(sphere.position) >= sphere.radius:
                     return false
 
             return true
 
-        static func _get_max_value(ref Vector3 value) -> float:
-            return Math.Max(abs(value.x), Math.Max(abs(value.y), abs(value.z)))
+        static func _get_max_value(value: Vector3) -> float:
+            return max(abs(value.x), max(abs(value.y), abs(value.z)))
 
         #endregion # Utilities
 
